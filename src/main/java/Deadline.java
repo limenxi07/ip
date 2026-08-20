@@ -19,7 +19,7 @@ public class Deadline extends Task {
         int byIndex = command.indexOf(" /by ");
         if (byIndex <= 9 || byIndex + 5 >= command.length()
                 || command.substring(byIndex + 5).isBlank()) {
-            throw new IllegalArgumentException("ITEM NOT SAVED. pls use format: deadline <description> /by <date/time>");
+            throw new IllegalArgumentException("INVALID. pls use format: deadline <description> /by <date/time>");
         }
         return new String[]{command.substring(9, byIndex), command.substring(byIndex + 5)};
     }

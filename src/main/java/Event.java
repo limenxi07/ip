@@ -24,7 +24,7 @@ public class Event extends Task {
                 || toIndex + 5 >= command.length()
                 || command.substring(toIndex + 5).isBlank()) {
             throw new IllegalArgumentException(
-                    "ITEM NOT SAVED. pls use format: event <description> /from <date/time> /to <date/time>");
+                    "INVALID. pls use format: event <description> /from <date/time> /to <date/time>");
         }
         return new String[]{command.substring(6, fromIndex),
                 command.substring(fromIndex + 7, toIndex), command.substring(toIndex + 5)};

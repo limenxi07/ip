@@ -15,7 +15,6 @@ public class CommandLibrary {
         commands.put("delete <number>", "delete a task");
         commands.put("undo", "undo the last task change");
         commands.put("help", "show commands");
-        commands.put("no/invalid command", "echo input");
         commands.put("bye", "exit serangooner"); // by codex
     }
 

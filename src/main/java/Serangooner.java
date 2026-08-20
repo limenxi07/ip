@@ -27,51 +27,41 @@ public class Serangooner {
         while (scanner.hasNextLine()) {
             String command = scanner.nextLine();
             if (command.equals("bye")) {
-                System.out.println(divider);
+                //System.out.println(divider);
                 System.out.println("bye~");
                 System.out.println(divider);
                 break; // exit
             }
 
-            System.out.println(divider);
+            //System.out.println(divider);
             if (command.equals("help")) {
                 System.out.println(commands);
             } else if (command.equals("list")) {
                 System.out.println(tasks);
             } else if (command.equals("undo")) {
                 System.out.println(tasks.undo() ? "undid your last edit" : "there's nothing to undo >:(");
-            } else if (command.startsWith("mark ")) {
-                Task task = tasks.mark(Integer.parseInt(command.substring(5)));
-                System.out.println("marked task as done: " + task);
-            } else if (command.startsWith("unmark ")) {
-                Task task = tasks.unmark(Integer.parseInt(command.substring(7)));
-                System.out.println("marked task as incomplete: " + task);
-            } else if (command.startsWith("delete ")) {
-                Task task = tasks.delete(Integer.parseInt(command.substring(7)));
-                System.out.println("deleted task: " + task);
-            } else if (command.startsWith("todo ")) {
-                String description = command.substring(5);
-                Task task = tasks.addTodo(description);
-                System.out.println("added todo: " + task);
-                System.out.println("you now have " + tasks.size() + " pending tasks :c"); // maybe combine all these print statements later
-            } else if (command.startsWith("deadline ")) {
+            } else if (command.equals("mark") || command.startsWith("mark ")) {
+                System.out.println(tasks.mark(command));
+            } else if (command.equals("unmark") || command.startsWith("unmark ")) {
+                System.out.println(tasks.unmark(command));
+            } else if (command.equals("delete") || command.startsWith("delete ")) {
+                System.out.println(tasks.delete(command));
+            } else if (command.equals("todo") || command.startsWith("todo ")) {
+                System.out.println(tasks.addTodo(command));
+            } else if (command.equals("deadline") || command.startsWith("deadline ")) {
                 try {
-                    Task task = tasks.addDeadline(command);
-                    System.out.println("added deadline: " + task);
-                    System.out.println("you now have " + tasks.size() + " pending tasks :c");
+                    System.out.println(tasks.addDeadline(command));
                 } catch (IllegalArgumentException exception) {
                     System.out.println(exception.getMessage());
                 }
-            } else if (command.startsWith("event ")) {
+            } else if (command.equals("event") || command.startsWith("event ")) {
                 try {
-                    Task task = tasks.addEvent(command);
-                    System.out.println("added event: " + task);
-                    System.out.println("you now have " + tasks.size() + " pending tasks :c");
+                    System.out.println(tasks.addEvent(command));
                 } catch (IllegalArgumentException exception) {
                     System.out.println(exception.getMessage());
                 }
-            } else { // default command: echo
-                System.out.println("echo: " + command);
+            } else { // reject command L
+                System.out.println("invalid command :/ if you don't know what you're doing, pls type 'help' for the command library .-.");
             }
             System.out.println(divider);
         }
