@@ -1,18 +1,21 @@
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** stores commands used by serangooner and their assoc. descriptions */
+/* stores commands used by serangooner and their assoc. descriptions */
 public class CommandLibrary {
     private final Map<String, String> commands = new LinkedHashMap<>();
 
     public CommandLibrary() {
-        commands.put("no command", "add a task");
+        commands.put("todo <description>", "add a task without a date or time");
+        commands.put("deadline <description> /by <date/time>", "add a task with a deadline");
+        commands.put("event <description> /from <date/time> /to <date/time>", "add an event");
         commands.put("list", "view all saved tasks");
         commands.put("mark <number>", "mark a task as done");
         commands.put("unmark <number>", "mark a task as incomplete");
         commands.put("delete <number>", "delete a task");
         commands.put("undo", "undo the last task change");
         commands.put("help", "show commands");
+        commands.put("no/invalid command", "echo input");
         commands.put("bye", "exit serangooner"); // by codex
     }
 

@@ -49,9 +49,29 @@ public class Serangooner {
             } else if (command.startsWith("delete ")) {
                 Task task = tasks.delete(Integer.parseInt(command.substring(7)));
                 System.out.println("deleted task: " + task);
-            } else { // default command: add task
-                tasks.add(command);
-                System.out.println("added to list: " + command);
+            } else if (command.startsWith("todo ")) {
+                String description = command.substring(5);
+                Task task = tasks.addTodo(description);
+                System.out.println("added todo: " + task);
+                System.out.println("you now have " + tasks.size() + " pending tasks :c"); // maybe combine all these print statements later
+            } else if (command.startsWith("deadline ")) {
+                try {
+                    Task task = tasks.addDeadline(command);
+                    System.out.println("added deadline: " + task);
+                    System.out.println("you now have " + tasks.size() + " pending tasks :c");
+                } catch (IllegalArgumentException exception) {
+                    System.out.println(exception.getMessage());
+                }
+            } else if (command.startsWith("event ")) {
+                try {
+                    Task task = tasks.addEvent(command);
+                    System.out.println("added event: " + task);
+                    System.out.println("you now have " + tasks.size() + " pending tasks :c");
+                } catch (IllegalArgumentException exception) {
+                    System.out.println(exception.getMessage());
+                }
+            } else { // default command: echo
+                System.out.println("echo: " + command);
             }
             System.out.println(divider);
         }

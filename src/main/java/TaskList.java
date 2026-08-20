@@ -7,12 +7,37 @@ import java.util.List;
 public class TaskList {
     private static final int MAX_TASKS = 100;
     private final List<Task> tasks = new ArrayList<>(MAX_TASKS);
-    private final Deque<Runnable> undoActions = new ArrayDeque<>();
+    private final Deque<Runnable> undoActions = new ArrayDeque<>(); // undo authored by codex
 
     public void add(String description) {
         Task task = new Task(description);
         tasks.add(task);
         undoActions.push(() -> tasks.remove(task));
+    }
+
+    public Task addTodo(String description) {
+        Task task = new Todo(description);
+        tasks.add(task);
+        undoActions.push(() -> tasks.remove(task));
+        return task;
+    }
+
+    public Task addDeadline(String command) {
+        Task task = new Deadline(command);
+        tasks.add(task);
+        undoActions.push(() -> tasks.remove(task));
+        return task;
+    }
+
+    public Task addEvent(String command) {
+        Task task = new Event(command);
+        tasks.add(task);
+        undoActions.push(() -> tasks.remove(task));
+        return task;
+    }
+
+    public int size() {
+        return tasks.size();
     }
 
     public Task mark(int taskNumber) {

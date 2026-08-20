@@ -1,0 +1,32 @@
+/* task to be completed by a given date/time */
+public class Deadline extends Task {
+    private final String deadline;
+
+    public Deadline(String description, String deadline) { // already parsed
+        super(description);
+        this.deadline = deadline;
+    }
+
+    public Deadline(String command) { // auto parsed
+        this(parse(command));
+    }
+
+    private Deadline(String[] parts) {
+        this(parts[0], parts[1]);
+    }
+
+    private static String[] parse(String command) { // parsing logic by codex
+        int byIndex = command.indexOf(" /by ");
+        if (byIndex <= 9 || byIndex + 5 >= command.length()
+                || command.substring(byIndex + 5).isBlank()) {
+            throw new IllegalArgumentException("ITEM NOT SAVED. pls use format: deadline <description> /by <date/time>");
+        }
+        return new String[]{command.substring(9, byIndex), command.substring(byIndex + 5)};
+    }
+
+    @Override
+    public String toString() {
+        return "[D]" + (isDone() ? "[✓] " : "[ ] ")
+                + getDescription() + " (by: " + deadline + ")";
+    }
+}
