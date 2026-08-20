@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Serangooner {
@@ -12,28 +14,34 @@ public class Serangooner {
         String divider = "━━━ . °‧ \uD80C\uDD9D \uD80C\uDD9F \uD80C\uDD9E ·｡";
 
         /* intro */
-        System.out.println(divider);
         System.out.println(banner);
         System.out.println("serangooner at your service. what's up?");
+        System.out.println("add items to your list, type 'list' to view");
         System.out.println("type 'bye' to end chat :(");
         System.out.println(divider);
 
-        /* listen to user input */
+        List<String> tasks = new ArrayList<>(100);
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
             String command = scanner.nextLine();
             if (command.equals("bye")) {
+                System.out.println(divider);
+                System.out.println("bye~");
+                System.out.println(divider);
                 break; // exit
             }
-            // default command: echo
+
             System.out.println(divider);
-            System.out.println("echo: " + command);
+            if (command.equals("list")) {
+                System.out.println("your list");
+                for (int i = 0; i < tasks.size(); i++) {
+                    System.out.println(" " + (i + 1) + ". " + tasks.get(i));
+                }
+            } else { // default command: add task
+                tasks.add(command);
+                System.out.println("added to list: " + command);
+            }
             System.out.println(divider);
         }
-
-        /* exit */
-        System.out.println(divider);
-        System.out.println("logging off...");
-        System.out.println(divider);
     }
 }
