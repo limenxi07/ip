@@ -1,9 +1,8 @@
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class Serangooner {
     public static void main(String[] args) {
+        /* assets */
         String banner = "  ____   U _____ u   ____        _      _   _     ____    U  ___ u   U  ___ u  _   _   U _____ u   ____     \n"
                 + " / __\"| u\\| ___\"|/U |  _\"\\ u U  /\"\\  u | \\ |\"| U /\"___|u   \\/\"_ \\/    \\/\"_ \\/ | \\ |\"|  \\| ___\"|/U |  _\"\\ u  \n"
                 + "<\\___ \\/  |  _|\"   \\| |_) |/  \\/ _ \\/ <|  \\| |>\\| |  _ /   | | | |    | | | |<|  \\| |>  |  _|\"   \\| |_) |/  \n"
@@ -20,7 +19,8 @@ public class Serangooner {
         System.out.println("type 'bye' to end chat :(");
         System.out.println(divider);
 
-        List<String> tasks = new ArrayList<>(100);
+        /* user input */
+        TaskList tasks = new TaskList();
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
             String command = scanner.nextLine();
@@ -32,11 +32,16 @@ public class Serangooner {
             }
 
             System.out.println(divider);
-            if (command.equals("list")) {
-                System.out.println("your list");
-                for (int i = 0; i < tasks.size(); i++) {
-                    System.out.println(" " + (i + 1) + ". " + tasks.get(i));
-                }
+            if (command.equals("list")) { // view list
+                System.out.println(tasks);
+            } else if (command.startsWith("mark ")) { // mark command
+                Task task = tasks.mark(Integer.parseInt(command.substring(5)));
+                System.out.println("marked task as done:");
+                System.out.println("  " + task);
+            } else if (command.startsWith("unmark ")) { // unmark command
+                Task task = tasks.unmark(Integer.parseInt(command.substring(7)));
+                System.out.println("marked task as incomplete:");
+                System.out.println("  " + task);
             } else { // default command: add task
                 tasks.add(command);
                 System.out.println("added to list: " + command);
