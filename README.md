@@ -13,3 +13,14 @@
 a AI* chatbot that helps you track stuff
 
 *AI = average intelligence
+
+## how to use serangooner
+
+from the project root, run:
+
+```bash
+javac -d out src/main/java/*.java
+java -cp out Serangooner
+```
+
+enjoy talking to serangooner!
