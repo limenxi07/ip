@@ -23,7 +23,7 @@ public class Event extends Task {
         if (fromIndex <= 6 || toIndex <= fromIndex + 7
                 || toIndex + 5 >= command.length()
                 || command.substring(toIndex + 5).isBlank()) {
-            throw new IllegalArgumentException(
+            throw new SerangoonerException(
                     "INVALID. pls use format: event <description> /from <date/time> /to <date/time>");
         }
         return new String[]{command.substring(6, fromIndex),

@@ -16,7 +16,7 @@ public class TaskList {
     public String addTodo(String command) { // by codex
         String description = command.length() > 5 ? command.substring(5).trim() : "";
         if (description.isEmpty()) {
-            return "pls name ur task: todo <description>";
+            throw new SerangoonerException("pls name ur task: todo <description>");
         }
         Task task = new Todo(description);
         tasks.add(task);
@@ -54,17 +54,17 @@ public class TaskList {
                 ? command.substring(commandName.length()).trim() : "";
         String label = commandName.toUpperCase();
         if (argument.isEmpty()) {
-            return label + " FAILED. pls use format: " + commandName + " <number>";
+            throw new SerangoonerException(label + " FAILED. pls use format: " + commandName + " <number>");
         }
 
         final int taskNumber;
         try {
             taskNumber = Integer.parseInt(argument);
         } catch (NumberFormatException exception) {
-            return label + " FAILED. pls give a valid task number";
+            throw new SerangoonerException(label + " FAILED. pls give a valid task number", exception);
         }
         if (taskNumber < 1 || taskNumber > tasks.size()) {
-            return label + " FAILED. task number must be between 1 and " + tasks.size();
+            throw new SerangoonerException(label + " FAILED. task number must be between 1 and " + tasks.size());
         }
 
         Task task = markDone ? mark(taskNumber) : unmark(taskNumber);
@@ -74,17 +74,17 @@ public class TaskList {
     public String delete(String command) {
         String argument = command.length() > 6 ? command.substring(6).trim() : "";
         if (argument.isEmpty()) {
-            return "DELETE FAILED. pls use format: delete <number>";
+            throw new SerangoonerException("DELETE FAILED. pls use format: delete <number>");
         }
 
         final int taskNumber;
         try {
             taskNumber = Integer.parseInt(argument);
         } catch (NumberFormatException exception) {
-            return "DELETE FAILED. pls give a valid task number";
+            throw new SerangoonerException("DELETE FAILED. pls give a valid task number", exception);
         }
         if (taskNumber < 1 || taskNumber > tasks.size()) {
-            return "DELETE FAILED. task number must be between 1 and " + tasks.size();
+            throw new SerangoonerException("DELETE FAILED. task number must be between 1 and " + tasks.size());
         }
         return "deleted task: " + delete(taskNumber);
     }

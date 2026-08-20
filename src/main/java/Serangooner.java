@@ -34,7 +34,8 @@ public class Serangooner {
             }
 
             //System.out.println(divider);
-            if (command.equals("help")) {
+            try {
+                if (command.equals("help")) {
                 System.out.println(commands);
             } else if (command.equals("list")) {
                 System.out.println(tasks);
@@ -49,19 +50,15 @@ public class Serangooner {
             } else if (command.equals("todo") || command.startsWith("todo ")) {
                 System.out.println(tasks.addTodo(command));
             } else if (command.equals("deadline") || command.startsWith("deadline ")) {
-                try {
-                    System.out.println(tasks.addDeadline(command));
-                } catch (IllegalArgumentException exception) {
-                    System.out.println(exception.getMessage());
-                }
+                System.out.println(tasks.addDeadline(command));
             } else if (command.equals("event") || command.startsWith("event ")) {
-                try {
-                    System.out.println(tasks.addEvent(command));
-                } catch (IllegalArgumentException exception) {
-                    System.out.println(exception.getMessage());
-                }
+                System.out.println(tasks.addEvent(command));
             } else { // reject command L
-                System.out.println("invalid command :/ if you don't know what you're doing, pls type 'help' for the command library .-.");
+                throw new SerangoonerException(
+                        "invalid command :/ if you don't know what you're doing, pls type 'help' for the command library .-.");
+                }
+            } catch (SerangoonerException exception) {
+                System.out.println(exception.getMessage());
             }
             System.out.println(divider);
         }
