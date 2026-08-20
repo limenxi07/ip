@@ -11,12 +11,14 @@ public class Serangooner {
                 + "  )(  (__)<<   >>   //   \\\\_  \\\\    >> ||   \\\\,-._)(|_       \\\\         \\\\    ||   \\\\,-.<<   >>   //   \\\\_  \n"
                 + " (__)    (__) (__) (__)  (__)(__)  (__)(_\")  (_/(__)__)     (__)       (__)   (_\")  (_/(__) (__) (__)  (__)  \n";
         String divider = "━━━ . °‧ \uD80C\uDD9D \uD80C\uDD9F \uD80C\uDD9E ·｡";
+        CommandLibrary commands = new CommandLibrary();
 
         /* intro */
         System.out.println(banner);
+        System.out.println(divider);
         System.out.println("serangooner at your service. what's up?");
-        System.out.println("add items to your list, type 'list' to view");
-        System.out.println("type 'bye' to end chat :(");
+        System.out.println("to see commands, type 'help'");
+        System.out.println("done? type 'bye' to exit :(");
         System.out.println(divider);
 
         /* user input */
@@ -32,16 +34,21 @@ public class Serangooner {
             }
 
             System.out.println(divider);
-            if (command.equals("list")) { // view list
+            if (command.equals("help")) {
+                System.out.println(commands);
+            } else if (command.equals("list")) {
                 System.out.println(tasks);
-            } else if (command.startsWith("mark ")) { // mark command
+            } else if (command.equals("undo")) {
+                System.out.println(tasks.undo() ? "undid your last edit" : "there's nothing to undo >:(");
+            } else if (command.startsWith("mark ")) {
                 Task task = tasks.mark(Integer.parseInt(command.substring(5)));
-                System.out.println("marked task as done:");
-                System.out.println("  " + task);
-            } else if (command.startsWith("unmark ")) { // unmark command
+                System.out.println("marked task as done: " + task);
+            } else if (command.startsWith("unmark ")) {
                 Task task = tasks.unmark(Integer.parseInt(command.substring(7)));
-                System.out.println("marked task as incomplete:");
-                System.out.println("  " + task);
+                System.out.println("marked task as incomplete: " + task);
+            } else if (command.startsWith("delete ")) {
+                Task task = tasks.delete(Integer.parseInt(command.substring(7)));
+                System.out.println("deleted task: " + task);
             } else { // default command: add task
                 tasks.add(command);
                 System.out.println("added to list: " + command);
