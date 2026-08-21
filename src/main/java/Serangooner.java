@@ -16,7 +16,6 @@ public class Serangooner {
                 + "  )(  (__)<<   >>   //   \\\\_  \\\\    >> ||   \\\\,-._)(|_       \\\\         \\\\    ||   \\\\,-.<<   >>   //   \\\\_  \n"
                 + " (__)    (__) (__) (__)  (__)(__)  (__)(_\")  (_/(__)__)     (__)       (__)   (_\")  (_/(__) (__) (__)  (__)  \n";
         String divider = "━━━ . °‧ \uD80C\uDD9D \uD80C\uDD9F \uD80C\uDD9E ·｡";
-        CommandLibrary commands = new CommandLibrary();
 
         /* intro */
         System.out.println(banner);
@@ -31,36 +30,24 @@ public class Serangooner {
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
             String command = scanner.nextLine();
-            if (command.equals("bye")) {
-                //System.out.println(divider);
-                System.out.println("bye~");
-                System.out.println(divider);
-                break; // exit
-            }
-
-            //System.out.println(divider);
             try {
-                if (command.equals("help")) {
-                System.out.println(commands);
-            } else if (command.equals("list")) {
-                System.out.println(tasks);
-            } else if (command.equals("undo")) {
-                System.out.println(tasks.undo() ? "undid your last edit" : "there's nothing to undo >:(");
-            } else if (command.equals("mark") || command.startsWith("mark ")) {
-                System.out.println(tasks.mark(command));
-            } else if (command.equals("unmark") || command.startsWith("unmark ")) {
-                System.out.println(tasks.unmark(command));
-            } else if (command.equals("delete") || command.startsWith("delete ")) {
-                System.out.println(tasks.delete(command));
-            } else if (command.equals("todo") || command.startsWith("todo ")) {
-                System.out.println(tasks.addTodo(command));
-            } else if (command.equals("deadline") || command.startsWith("deadline ")) {
-                System.out.println(tasks.addDeadline(command));
-            } else if (command.equals("event") || command.startsWith("event ")) {
-                System.out.println(tasks.addEvent(command));
-            } else { // reject command L
-                throw new SerangoonerException(
-                        "invalid command :/ if you don't know what you're doing, pls type 'help' for the command library .-.");
+                CommandType commandType = CommandType.fromInput(command);
+                switch (commandType) {
+                case BYE -> {
+                    System.out.println("bye~");
+                    System.out.println(divider);
+                    return;
+                }
+                case HELP -> System.out.println(CommandType.helpText());
+                case LIST -> System.out.println(tasks);
+                case UNDO -> System.out.println(tasks.undo()
+                        ? "undid your last edit" : "there's nothing to undo >:(");
+                case MARK -> System.out.println(tasks.mark(command));
+                case UNMARK -> System.out.println(tasks.unmark(command));
+                case DELETE -> System.out.println(tasks.delete(command));
+                case TODO -> System.out.println(tasks.addTodo(command));
+                case DEADLINE -> System.out.println(tasks.addDeadline(command));
+                case EVENT -> System.out.println(tasks.addEvent(command));
                 }
             } catch (SerangoonerException exception) {
                 playSound();
