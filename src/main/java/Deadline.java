@@ -16,12 +16,12 @@ public class Deadline extends Task {
     }
 
     private static String[] parse(String command) { // parsing logic by codex
-        int byIndex = command.indexOf(" /by ");
-        if (byIndex <= 9 || byIndex + 5 >= command.length()
-                || command.substring(byIndex + 5).isBlank()) {
-            throw new SerangoonerException("INVALID. pls use format: deadline <description> /by <date/time>");
+        int byIndex = command.indexOf(" by ");
+        if (byIndex <= 9 || byIndex + 4 >= command.length()
+                || command.substring(byIndex + 4).isBlank()) {
+            throw new SerangoonerException("INVALID. pls use format: deadline <description> by <date>");
         }
-        return new String[]{command.substring(9, byIndex), command.substring(byIndex + 5)};
+        return new String[]{command.substring(9, byIndex), command.substring(byIndex + 4)};
     }
 
     @Override

@@ -1,6 +1,11 @@
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Scanner;
 
 public class Serangooner {
+    private static final Path FAAAH = Path.of("src/main/resources/faaah.mp3");
+
     public static void main(String[] args) {
         /* assets */
         String banner = "  ____   U _____ u   ____        _      _   _     ____    U  ___ u   U  ___ u  _   _   U _____ u   ____     \n"
@@ -58,9 +63,25 @@ public class Serangooner {
                         "invalid command :/ if you don't know what you're doing, pls type 'help' for the command library .-.");
                 }
             } catch (SerangoonerException exception) {
+                playSound();
                 System.out.println(exception.getMessage());
             }
             System.out.println(divider);
         }
+    }
+
+    /* Plays funny sound upon invalid command by user. Authored by codex. */
+    private static void playSound() {
+        if (!Files.exists(FAAAH)) {
+            return;
+        }
+
+        Thread.ofVirtual().start(() -> {
+            try {
+                new ProcessBuilder("afplay", FAAAH.toString()).start().waitFor();
+            } catch (IOException | InterruptedException exception) {
+                Thread.currentThread().interrupt();
+            }
+        });
     }
 }

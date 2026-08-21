@@ -18,16 +18,16 @@ public class Event extends Task {
     }
 
     private static String[] parse(String command) { // parsing logic by codex
-        int fromIndex = command.indexOf(" /from ");
-        int toIndex = command.indexOf(" /to ", fromIndex);
-        if (fromIndex <= 6 || toIndex <= fromIndex + 7
-                || toIndex + 5 >= command.length()
-                || command.substring(toIndex + 5).isBlank()) {
+        int fromIndex = command.indexOf(" from ");
+        int toIndex = command.indexOf(" to ", fromIndex);
+        if (fromIndex <= 6 || toIndex <= fromIndex + 6
+                || toIndex + 4 >= command.length()
+                || command.substring(toIndex + 4).isBlank()) {
             throw new SerangoonerException(
-                    "INVALID. pls use format: event <description> /from <date/time> /to <date/time>");
+                    "INVALID. pls use format: event <description> from <date> to <date>");
         }
         return new String[]{command.substring(6, fromIndex),
-                command.substring(fromIndex + 7, toIndex), command.substring(toIndex + 5)};
+                command.substring(fromIndex + 6, toIndex), command.substring(toIndex + 4)};
     }
 
     @Override

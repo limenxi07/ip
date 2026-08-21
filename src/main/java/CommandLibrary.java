@@ -7,8 +7,8 @@ public class CommandLibrary {
 
     public CommandLibrary() {
         commands.put("todo <description>", "add a task without a date or time");
-        commands.put("deadline <description> /by <date/time>", "add a task with a deadline");
-        commands.put("event <description> /from <date/time> /to <date/time>", "add an event");
+        commands.put("deadline <description> by <date>", "add a task with a deadline");
+        commands.put("event <description> from <date> to <date>", "add an event");
         commands.put("list", "view all saved tasks");
         commands.put("mark <number>", "mark a task as done");
         commands.put("unmark <number>", "mark a task as incomplete");
