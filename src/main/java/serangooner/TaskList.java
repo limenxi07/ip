@@ -1,9 +1,11 @@
 package serangooner;
 
+import java.time.LocalDate;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Stores and edits the tasks entered by the user.
@@ -201,6 +203,39 @@ public class TaskList {
         return "deleted task: " + delete(parseTaskNumber(command, "delete"));
     }
 
+    /**
+     * Returns the tasks falling on the date, or within the range of dates,
+     * named by the given command.
+     *
+     * @param command Command in the form "on &lt;date&gt;" or "on &lt;date&gt; to &lt;date&gt;".
+     * @return Listing of the matching tasks, keeping the numbers they have in
+     *         the full list.
+     * @throws SerangoonerException If a date is missing, is not in an accepted
+     *         format, or the range ends before it starts.
+     */
+    public String occurringOn(String command) {
+        String argument = command.length() > 2 ? command.substring(2).trim() : "";
+        if (argument.isEmpty()) {
+            throw new SerangoonerException("pls give a date: on <date> [to <date>]. "
+                    + TaskDateTime.FORMAT_HINT);
+        }
+
+        int toIndex = argument.indexOf(" to ");
+        LocalDate start = TaskDateTime.parseDate(
+                toIndex < 0 ? argument : argument.substring(0, toIndex));
+        LocalDate end = toIndex < 0 ? start
+                : TaskDateTime.parseDate(argument.substring(toIndex + 4));
+        if (end.isBefore(start)) {
+            throw new SerangoonerException("that range ends before it starts o.O");
+        }
+
+        String range = start.equals(end)
+                ? "on " + TaskDateTime.format(start)
+                : "between " + TaskDateTime.format(start) + " and " + TaskDateTime.format(end);
+        return listTasks("tasks " + range, "you have nothing " + range + " :D",
+                task -> task.isWithin(start, end));
+    }
+
     // Methods that act on tasks directly.
 
     /**
@@ -279,19 +314,38 @@ public class TaskList {
         return true;
     }
 
-    @Override
-    public String toString() {
-        if (size() == 0) {
-            return "your list is empty T-T add something with 'todo ...'";
-        }
-        StringBuilder output = new StringBuilder("your list");
+    /**
+     * Returns a numbered listing of the tasks that the given filter accepts.
+     * A task keeps the number it has in the full list, so that a number read
+     * off any listing stays usable with mark, unmark and delete.
+     *
+     * @param heading Line introducing the listing.
+     * @param emptyMessage Message to return when the filter accepts no task.
+     * @param filter Decides which tasks appear in the listing.
+     * @return Listing to show the user.
+     */
+    private String listTasks(String heading, String emptyMessage, Predicate<Task> filter) {
+        StringBuilder output = new StringBuilder(heading);
+        boolean hasMatch = false;
         for (int i = 0; i < tasks.size(); i++) {
+            Task task = tasks.get(i);
+            if (!filter.test(task)) {
+                continue;
+            }
+
+            hasMatch = true;
             output.append(System.lineSeparator())
                     .append(" ")
                     .append(i + 1)
                     .append(". ")
-                    .append(tasks.get(i));
+                    .append(task);
         }
-        return output.toString();
+        return hasMatch ? output.toString() : emptyMessage;
+    }
+
+    @Override
+    public String toString() {
+        return listTasks("your list", "your list is empty T-T add something with 'todo ...'",
+                task -> true);
     }
 }

@@ -13,6 +13,7 @@ public enum CommandType {
     DEADLINE("deadline", "deadline <description> by <date>", "add a task with a deadline"),
     EVENT("event", "event <description> from <date> to <date>", "add an event"),
     LIST("list", "list", "view all saved tasks"),
+    ON("on", "on <date> [to <date>]", "view deadlines and events on a date or within a range"),
     MARK("mark", "mark <number>", "mark a task as done"),
     UNMARK("unmark", "unmark <number>", "mark a task as incomplete"),
     DELETE("delete", "delete <number>", "delete a task"),
@@ -54,7 +55,9 @@ public enum CommandType {
                     .append(" - ")
                     .append(command.description);
         }
-        return output.toString();
+        return output.append(System.lineSeparator())
+                .append(TaskDateTime.FORMAT_HINT)
+                .toString();
     }
 
     /**

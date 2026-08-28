@@ -1,5 +1,6 @@
 package serangooner;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 /**
@@ -10,27 +11,34 @@ public class Event extends Task {
     public static final String SAVE_CODE = "E";
     private static final int SAVE_FIELDS = 5;
 
-    private final String from;
-    private final String to;
+    private final TaskDateTime from;
+    private final TaskDateTime to;
 
     /**
-     * Constructs an event from values that have already been parsed.
+     * Constructs an event from a description and two unparsed dates.
      *
      * @param description Text describing what the event involves.
-     * @param from Date or time at which the event starts.
-     * @param to Date or time at which the event ends.
+     * @param from Date, and optionally time, at which the event starts.
+     * @param to Date, and optionally time, at which the event ends.
+     * @throws SerangoonerException If either date is not in an accepted format,
+     *         or the event ends before it starts.
      */
     public Event(String description, String from, String to) {
         super(description);
-        this.from = from;
-        this.to = to;
+        this.from = TaskDateTime.parse(from);
+        this.to = TaskDateTime.parse(to);
+        if (this.to.isBefore(this.from)) {
+            throw new SerangoonerException("INVALID. ur event ends before it starts o.O");
+        }
     }
 
     /**
      * Constructs an event by parsing a full user command.
      *
      * @param command Command in the form "event &lt;description&gt; from &lt;date&gt; to &lt;date&gt;".
-     * @throws SerangoonerException If the command does not follow that form.
+     * @throws SerangoonerException If the command does not follow that form, if
+     *         either of its dates is not in an accepted format, or if the event
+     *         ends before it starts.
      */
     public Event(String command) {
         this(parse(command));
@@ -55,7 +63,8 @@ public class Event extends Task {
                 || toIndex + 4 >= command.length()
                 || command.substring(toIndex + 4).isBlank()) {
             throw new SerangoonerException(
-                    "INVALID. pls use format: event <description> from <date> to <date>");
+                    "INVALID. pls use format: event <description> from <date> to <date>. "
+                            + TaskDateTime.FORMAT_HINT);
         }
         return new String[]{command.substring(6, fromIndex),
                 command.substring(fromIndex + 6, toIndex), command.substring(toIndex + 4)};
@@ -72,9 +81,14 @@ public class Event extends Task {
     }
 
     @Override
+    public boolean isWithin(LocalDate start, LocalDate end) {
+        return isOverlapping(from, to, start, end);
+    }
+
+    @Override
     public String toSaveFormat() {
         return SAVE_CODE + SAVE_DELIMITER + super.toSaveFormat()
-                + SAVE_DELIMITER + from + SAVE_DELIMITER + to;
+                + SAVE_DELIMITER + from.toSaveFormat() + SAVE_DELIMITER + to.toSaveFormat();
     }
 
     @Override
