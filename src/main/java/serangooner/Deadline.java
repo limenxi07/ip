@@ -1,5 +1,6 @@
 package serangooner;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 /**
@@ -10,24 +11,26 @@ public class Deadline extends Task {
     public static final String SAVE_CODE = "D";
     private static final int SAVE_FIELDS = 4;
 
-    private final String deadline;
+    private final TaskDateTime deadline;
 
     /**
-     * Constructs a deadline from values that have already been parsed.
+     * Constructs a deadline from a description and an unparsed date.
      *
      * @param description Text describing what the task involves.
-     * @param deadline Date or time by which the task must be completed.
+     * @param deadline Date, and optionally time, by which the task must be completed.
+     * @throws SerangoonerException If the date is not in an accepted format.
      */
     public Deadline(String description, String deadline) {
         super(description);
-        this.deadline = deadline;
+        this.deadline = TaskDateTime.parse(deadline);
     }
 
     /**
      * Constructs a deadline by parsing a full user command.
      *
      * @param command Command in the form "deadline &lt;description&gt; by &lt;date&gt;".
-     * @throws SerangoonerException If the command does not follow that form.
+     * @throws SerangoonerException If the command does not follow that form, or
+     *         its date is not in an accepted format.
      */
     public Deadline(String command) {
         this(parse(command));
@@ -49,7 +52,8 @@ public class Deadline extends Task {
         int byIndex = command.indexOf(" by ");
         if (byIndex <= 9 || byIndex + 4 >= command.length()
                 || command.substring(byIndex + 4).isBlank()) {
-            throw new SerangoonerException("INVALID. pls use format: deadline <description> by <date>");
+            throw new SerangoonerException("INVALID. pls use format: deadline <description> by <date>. "
+                    + TaskDateTime.FORMAT_HINT);
         }
         return new String[]{command.substring(9, byIndex), command.substring(byIndex + 4)};
     }
@@ -65,8 +69,14 @@ public class Deadline extends Task {
     }
 
     @Override
+    public boolean isWithin(LocalDate start, LocalDate end) {
+        return isOverlapping(deadline, deadline, start, end);
+    }
+
+    @Override
     public String toSaveFormat() {
-        return SAVE_CODE + SAVE_DELIMITER + super.toSaveFormat() + SAVE_DELIMITER + deadline;
+        return SAVE_CODE + SAVE_DELIMITER + super.toSaveFormat()
+                + SAVE_DELIMITER + deadline.toSaveFormat();
     }
 
     @Override

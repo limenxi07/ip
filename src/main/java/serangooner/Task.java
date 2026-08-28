@@ -1,5 +1,6 @@
 package serangooner;
 
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -50,9 +51,38 @@ public class Task {
     }
 
     /**
+     * Returns whether this task falls on or between the given dates.
+     * A task that carries no date of its own never does.
+     *
+     * @param start First date of the range, inclusive.
+     * @param end Last date of the range, inclusive.
+     * @return True if this task falls within the range.
+     */
+    public boolean isWithin(LocalDate start, LocalDate end) {
+        return false;
+    }
+
+    /**
+     * Returns whether the span a task occupies overlaps the given range of dates.
+     * A task that sits at a single point in time passes that point as both
+     * ends of its span.
+     *
+     * @param from Start of the span the task occupies.
+     * @param to End of the span the task occupies.
+     * @param start First date of the range, inclusive.
+     * @param end Last date of the range, inclusive.
+     * @return True if the span and the range share at least one date.
+     */
+    protected static boolean isOverlapping(TaskDateTime from, TaskDateTime to,
+            LocalDate start, LocalDate end) {
+        return !from.toLocalDate().isAfter(end) && !to.toLocalDate().isBefore(start);
+    }
+
+    /**
      * Returns the task encoded by the given fields of a saved line.
      * A usable line has exactly the expected number of fields, none blank,
-     * and a recognized completion flag.
+     * a recognized completion flag, and remaining fields that the task type
+     * itself accepts.
      *
      * @param fields Fields that one line of the save file was split into.
      * @param fieldCount Number of fields a line of this task type must have.
@@ -74,7 +104,12 @@ public class Task {
             return Optional.empty();
         }
 
-        Task task = factory.apply(fields);
+        final Task task;
+        try {
+            task = factory.apply(fields);
+        } catch (SerangoonerException exception) {
+            return Optional.empty();
+        }
         if (isDone) {
             task.markDone();
         }
