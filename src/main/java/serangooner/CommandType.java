@@ -1,6 +1,13 @@
+package serangooner;
+
 import java.util.Arrays;
 
-/* represents a command that can be entered in serangooner; refactored by codex */
+// Enum-based command library refactored with the help of Codex.
+/**
+ * Represents a command that a user can enter in Serangooner.
+ * Each constant pairs the keyword typed by the user with the syntax and
+ * description shown in the help listing.
+ */
 public enum CommandType {
     TODO("todo", "todo <description>", "add a task without a date or time"),
     DEADLINE("deadline", "deadline <description> by <date>", "add a task with a deadline"),
@@ -31,7 +38,11 @@ public enum CommandType {
         return description;
     }
 
-    /* generate command library to help users */
+    /**
+     * Returns a numbered listing of every command, its syntax and its description.
+     *
+     * @return Help text ready to be shown to the user.
+     */
     public static String helpText() {
         StringBuilder output = new StringBuilder("serangooner commands:");
         int commandNumber = 1;
@@ -46,8 +57,15 @@ public enum CommandType {
         return output.toString();
     }
 
-    /* search command library to find command matching first word of user input; by codex */
+    /**
+     * Returns the command whose keyword matches the first word of the given input.
+     *
+     * @param input Line of input entered by the user.
+     * @return Command matching the first word of the input.
+     * @throws SerangoonerException If the input is blank or matches no command.
+     */
     public static CommandType fromInput(String input) {
+        // Lookup authored with Codex.
         if (input.isBlank()) {
             throw invalidCommand();
         }

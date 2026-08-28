@@ -19,8 +19,17 @@ a AI* chatbot that helps you track stuff
 from the project root, run:
 
 ```bash
-javac -d out src/main/java/*.java
-java -cp out Serangooner
+javac -d out src/main/java/serangooner/*.java
+java -cp out serangooner.Serangooner
 ```
 
 enjoy talking to serangooner!
+
+## why serangooner?
+i'm not even a serangoon resident. i just think serangoon is cool, and
+that people living in serangoon should be called serangooners.
+
+## AI declaration
+
+Claude Code (Opus 5 - High) was used to write code, and refactored the 
+codebase to follow the Java coding standard.
