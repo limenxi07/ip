@@ -7,14 +7,67 @@ import java.util.List;
 
 /**
  * Stores and edits the tasks entered by the user.
- * Every edit pushes an action that reverses it, so the most recent edit can
- * be undone.
+ * The list is read from storage when it is constructed and written back
+ * after every edit, so the file on disk always matches what the user sees.
+ * Every edit also pushes an action that reverses it, so the most recent edit
+ * can be undone.
  */
 public class TaskList {
     private static final int MAX_TASKS = 100;
     private final List<Task> tasks = new ArrayList<>(MAX_TASKS);
     // Undo stack authored with the help of Codex.
     private final Deque<Runnable> undoActions = new ArrayDeque<>();
+    private final Storage storage;
+    private final String loadSummary;
+
+    /**
+     * Constructs a task list backed by the default save file.
+     */
+    public TaskList() {
+        this(new Storage());
+    }
+
+    /**
+     * Constructs a task list backed by the given storage, reading in whatever
+     * tasks it already holds.
+     *
+     * @param storage Storage that the list is read from and written back to.
+     */
+    public TaskList(Storage storage) {
+        this.storage = storage;
+        this.loadSummary = loadFrom(storage);
+    }
+
+    public String getLoadSummary() {
+        return loadSummary;
+    }
+
+    /**
+     * Returns a one line report of what was read from the given storage,
+     * after copying the tasks it held into this list.
+     *
+     * @param storage Storage to read from.
+     * @return Report to show the user, or an empty string when there is
+     *         nothing worth saying.
+     */
+    private String loadFrom(Storage storage) {
+        Storage.LoadResult result;
+        try {
+            result = storage.load();
+        } catch (SerangoonerException exception) {
+            return exception.getMessage();
+        }
+
+        tasks.addAll(result.tasks());
+        if (result.tasks().isEmpty() && result.skippedLineCount() == 0) {
+            return "";
+        }
+        String summary = "loaded " + result.tasks().size() + " task(s) from your last visit";
+        if (result.skippedLineCount() > 0) {
+            summary += "; skipped " + result.skippedLineCount() + " unreadable line(s)";
+        }
+        return summary;
+    }
 
     // Methods that parse a raw user command.
 
@@ -33,6 +86,7 @@ public class TaskList {
         Task task = new Todo(description);
         tasks.add(task);
         undoActions.push(() -> tasks.remove(task));
+        storage.save(tasks);
         return "added todo: " + task + System.lineSeparator()
                 + "you now have " + size() + " pending task(s) :c";
     }
@@ -48,6 +102,7 @@ public class TaskList {
         Task task = new Deadline(command);
         tasks.add(task);
         undoActions.push(() -> tasks.remove(task));
+        storage.save(tasks);
         return "added deadline: " + task + System.lineSeparator()
                 + "you now have " + size() + " pending task(s) :c";
     }
@@ -63,6 +118,7 @@ public class TaskList {
         Task task = new Event(command);
         tasks.add(task);
         undoActions.push(() -> tasks.remove(task));
+        storage.save(tasks);
         return "added event: " + task + System.lineSeparator()
                 + "you now have " + size() + " pending task(s) :c";
     }
@@ -171,6 +227,7 @@ public class TaskList {
                 task.markNotDone();
             }
         });
+        storage.save(tasks);
         return task;
     }
 
@@ -191,6 +248,7 @@ public class TaskList {
                 task.markNotDone();
             }
         });
+        storage.save(tasks);
         return task;
     }
 
@@ -203,6 +261,7 @@ public class TaskList {
     public Task delete(int taskNumber) {
         Task task = tasks.remove(taskNumber - 1);
         undoActions.push(() -> tasks.add(taskNumber - 1, task));
+        storage.save(tasks);
         return task;
     }
 
@@ -216,6 +275,7 @@ public class TaskList {
             return false;
         }
         undoActions.pop().run();
+        storage.save(tasks);
         return true;
     }
 

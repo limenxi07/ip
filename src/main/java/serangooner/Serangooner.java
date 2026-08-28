@@ -40,6 +40,12 @@ public class Serangooner {
         System.out.println(DIVIDER);
 
         TaskList tasks = new TaskList();
+        String loadSummary = tasks.getLoadSummary();
+        if (!loadSummary.isEmpty()) {
+            System.out.println(loadSummary);
+            System.out.println(DIVIDER);
+        }
+
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
             String command = scanner.nextLine();
