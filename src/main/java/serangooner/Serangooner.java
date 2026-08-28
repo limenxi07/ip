@@ -59,6 +59,7 @@ public class Serangooner {
                     }
                     case HELP -> System.out.println(CommandType.helpText());
                     case LIST -> System.out.println(tasks);
+                    case ON -> System.out.println(tasks.occurringOn(command));
                     case UNDO -> System.out.println(tasks.undo()
                             ? "undid your last edit" : "there's nothing to undo >:(");
                     case MARK -> System.out.println(tasks.mark(command));
