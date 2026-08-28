@@ -16,11 +16,35 @@ a AI* chatbot that helps you track stuff
 
 ## how to use serangooner
 
-from the project root, run:
+you need java 25 or later. check yours with `java -version`.
+
+### run the released jar
+
+1. download `serangooner.jar` from the [latest release](https://github.com/limenxi07/ip/releases/latest)
+2. put it in a folder of its own
+3. open a command window in that folder and run:
 
 ```bash
-javac -d out $(find src/main/java -name '*.java')
-java -cp out serangooner.Serangooner
+java -jar "serangooner.jar"
+```
+
+serangooner keeps your tasks in `data/serangooner.txt` beside the jar, and
+makes that folder itself on the first save. run it from the same folder
+each time and your list will still be waiting.
+
+### build the jar yourself
+
+from the project root:
+
+```bash
+./gradlew shadowJar
+```
+
+that writes `build/libs/serangooner.jar`, dependencies and all. to start
+serangooner without packaging it, run:
+
+```bash
+./gradlew run
 ```
 
 enjoy talking to serangooner!
