@@ -319,4 +319,50 @@ public class CommandTest {
 
         assertTrue(printed().isEmpty());
     }
+
+    @Test
+    public void execute_findCommand_showsOnlyTheMatchingTasks(@TempDir Path directory) {
+        TaskList tasks = new TaskList(List.of(new Todo("read book"),
+                new Todo("write essay"), new Deadline("return book", "2026-09-01")));
+
+        new FindCommand("book").execute(tasks, ui(), storageIn(directory));
+
+        assertTrue(printed().startsWith("matching tasks:"));
+        assertTrue(printed().contains("read book"));
+        assertTrue(printed().contains("return book"));
+        assertFalse(printed().contains("write essay"));
+    }
+
+    @Test
+    public void execute_findCommand_showsTheNumbersFromTheFullList(@TempDir Path directory) {
+        TaskList tasks = new TaskList(List.of(new Todo("write essay"), new Todo("read book")));
+
+        new FindCommand("book").execute(tasks, ui(), storageIn(directory));
+
+        assertTrue(printed().contains(" 2. [T][ ] read book"));
+    }
+
+    @Test
+    public void execute_findCommandMatchingNothing_saysSo(@TempDir Path directory) {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+
+        new FindCommand("essay").execute(tasks, ui(), storageIn(directory));
+
+        assertTrue(printed().startsWith("no task mentions 'essay'"));
+    }
+
+    @Test
+    public void execute_findCommand_leavesTheSaveFileAlone(@TempDir Path directory) {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+        Storage storage = storageIn(directory);
+
+        new FindCommand("book").execute(tasks, ui(), storage);
+
+        assertTrue(storage.load().tasks().isEmpty());
+    }
+
+    @Test
+    public void isExit_findCommand_returnsFalse() {
+        assertFalse(new FindCommand("book").isExit());
+    }
 }

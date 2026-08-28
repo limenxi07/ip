@@ -217,6 +217,16 @@ public class Ui {
     }
 
     /**
+     * Shows the tasks whose description carries a keyword.
+     *
+     * @param entries Matching tasks, each with the number it is known by.
+     * @param keyword Text that was searched for.
+     */
+    public void showMatchingTasks(List<TaskList.Entry> entries, String keyword) {
+        showListing(entries, "matching tasks:", "no task mentions '" + keyword + "' :o");
+    }
+
+    /**
      * Shows a numbered listing of the given tasks, or says so when there are none.
      *
      * @param entries Tasks to list, each with the number it is known by.

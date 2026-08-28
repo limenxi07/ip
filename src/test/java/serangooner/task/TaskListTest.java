@@ -320,4 +320,73 @@ public class TaskListTest {
         assertEquals(1, tasks.size());
         assertSame(first, tasks.getTasks().get(0));
     }
+
+    @Test
+    public void matching_keywordInSomeDescriptions_returnsOnlyThoseTasks() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book"),
+                new Todo("write essay"), new Todo("return book")));
+
+        List<TaskList.Entry> matches = tasks.matching("book");
+
+        assertEquals(2, matches.size());
+        assertEquals("[T][ ] read book", matches.get(0).task().toString());
+        assertEquals("[T][ ] return book", matches.get(1).task().toString());
+    }
+
+    @Test
+    public void matching_always_keepsTheNumbersFromTheFullList() {
+        // A number read off the matches has to stay usable with mark and delete.
+        TaskList tasks = new TaskList(List.of(new Todo("write essay"),
+                new Todo("read book"), new Todo("nap"), new Todo("return book")));
+
+        List<TaskList.Entry> matches = tasks.matching("book");
+
+        assertEquals(2, matches.get(0).number());
+        assertEquals(4, matches.get(1).number());
+    }
+
+    @Test
+    public void matching_keywordInAnotherCase_stillFindsTheTask() {
+        TaskList tasks = new TaskList(List.of(new Todo("Read Book")));
+        assertEquals(1, tasks.matching("book").size());
+        assertEquals(1, tasks.matching("BOOK").size());
+        assertEquals(1, tasks.matching("bOoK").size());
+    }
+
+    @Test
+    public void matching_keywordInNoDescription_returnsNothing() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+        assertEquals(List.of(), tasks.matching("essay"));
+    }
+
+    @Test
+    public void matching_partOfAWord_stillFindsTheTask() {
+        TaskList tasks = new TaskList(List.of(new Todo("reading")));
+        assertEquals(1, tasks.matching("read").size());
+    }
+
+    @Test
+    public void matching_everyTaskType_searchesTheDescriptionAlone() {
+        // The date of a deadline is not part of its description, so a keyword
+        // that only appears in the date must not match.
+        TaskList tasks = new TaskList(List.of(new Todo("read book"),
+                new Deadline("return book", "2026-09-01"),
+                new Event("book fair", "2026-09-03", "2026-09-04")));
+
+        assertEquals(3, tasks.matching("book").size());
+        assertEquals(List.of(), tasks.matching("2026"));
+    }
+
+    @Test
+    public void matching_emptyList_returnsNothing() {
+        assertEquals(List.of(), new TaskList().matching("book"));
+    }
+
+    @Test
+    public void matching_always_leavesTheListUntouched() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+        tasks.matching("book");
+        assertEquals(1, tasks.size());
+        assertFalse(tasks.undo());
+    }
 }

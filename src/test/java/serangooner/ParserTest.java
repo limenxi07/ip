@@ -21,6 +21,7 @@ import serangooner.command.Command;
 import serangooner.command.CommandType;
 import serangooner.command.DeleteCommand;
 import serangooner.command.ExitCommand;
+import serangooner.command.FindCommand;
 import serangooner.command.HelpCommand;
 import serangooner.command.ListCommand;
 import serangooner.command.MarkCommand;
@@ -350,5 +351,50 @@ public class ParserTest {
         String printed = output.toString(StandardCharsets.UTF_8);
         assertTrue(printed.contains("submit ip"));
         assertTrue(printed.contains("submit tp"));
+    }
+
+    @Test
+    public void parse_findKeyword_returnsFindCommand() {
+        assertTrue(Parser.parse("find book") instanceof FindCommand);
+    }
+
+    @Test
+    public void parseKeyword_singleWord_returnsIt() {
+        assertEquals("book", Parser.parseKeyword("find book"));
+    }
+
+    @Test
+    public void parseKeyword_severalWords_returnsTheWholePhrase() {
+        assertEquals("read book", Parser.parseKeyword("find read book"));
+    }
+
+    @Test
+    public void parseKeyword_surroundingWhitespace_ignoresIt() {
+        assertEquals("book", Parser.parseKeyword("   find   book   "));
+    }
+
+    @Test
+    public void parseKeyword_noKeyword_exceptionThrown() {
+        assertThrows(SerangoonerException.class, () -> Parser.parseKeyword("find"));
+        assertThrows(SerangoonerException.class, () -> Parser.parseKeyword("find   "));
+    }
+
+    @Test
+    public void parse_findWithoutAKeyword_exceptionThrown() {
+        assertThrows(SerangoonerException.class, () -> Parser.parse("find"));
+    }
+
+    @Test
+    public void parse_findCommand_carriesTheKeywordIntoTheCommand(@TempDir Path directory) {
+        TaskList tasks = new TaskList(List.of(new Todo("read book"), new Todo("write essay")));
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        Ui ui = new Ui(new ByteArrayInputStream(new byte[0]),
+                new PrintStream(output, true, StandardCharsets.UTF_8));
+
+        Parser.parse("find book").execute(tasks, ui, new Storage(directory.resolve("tasks.txt")));
+
+        String printed = output.toString(StandardCharsets.UTF_8);
+        assertTrue(printed.contains("read book"));
+        assertFalse(printed.contains("write essay"));
     }
 }

@@ -280,4 +280,24 @@ public class UiTest {
         uiReading("").showTaskAdded(new Todo("read book"), 1);
         assertEquals("you now have 1 pending task(s) :c", printedLines().get(1));
     }
+
+    @Test
+    public void showMatchingTasks_severalMatches_numbersThemUnderAHeading() {
+        TaskList tasks = new TaskList(List.of(new Todo("write essay"),
+                new Todo("read book"), new Todo("return book")));
+
+        uiReading("").showMatchingTasks(tasks.matching("book"), "book");
+
+        List<String> lines = printedLines();
+        assertEquals("matching tasks:", lines.get(0));
+        assertEquals(" 2. [T][ ] read book", lines.get(1));
+        assertEquals(" 3. [T][ ] return book", lines.get(2));
+    }
+
+    @Test
+    public void showMatchingTasks_noMatch_saysSoAndQuotesTheKeyword() {
+        uiReading("").showMatchingTasks(new TaskList().matching("book"), "book");
+        assertEquals("no task mentions 'book' :o" + System.lineSeparator(),
+                output.toString(StandardCharsets.UTF_8));
+    }
 }

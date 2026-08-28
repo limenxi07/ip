@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Predicate;
 
 import serangooner.SerangoonerException;
@@ -142,6 +143,20 @@ public class TaskList {
      */
     public List<Entry> occurringOn(LocalDate start, LocalDate end) {
         return entriesMatching(task -> task.isWithin(start, end));
+    }
+
+    /**
+     * Returns the tasks whose description carries the given keyword, each with
+     * the number it is known by.
+     * Case is ignored, so a keyword typed in any case finds the task.
+     *
+     * @param keyword Text to look for in each task description.
+     * @return Matching tasks, in the order they are stored.
+     */
+    public List<Entry> matching(String keyword) {
+        String lowerCaseKeyword = keyword.toLowerCase(Locale.ROOT);
+        return entriesMatching(task -> task.getDescription()
+                .toLowerCase(Locale.ROOT).contains(lowerCaseKeyword));
     }
 
     /**

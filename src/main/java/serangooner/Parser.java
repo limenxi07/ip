@@ -8,6 +8,7 @@ import serangooner.command.Command;
 import serangooner.command.CommandType;
 import serangooner.command.DeleteCommand;
 import serangooner.command.ExitCommand;
+import serangooner.command.FindCommand;
 import serangooner.command.HelpCommand;
 import serangooner.command.ListCommand;
 import serangooner.command.MarkCommand;
@@ -62,6 +63,7 @@ public class Parser {
             case UNMARK -> new UnmarkCommand(parseTaskNumber(fullCommand, commandType));
             case DELETE -> new DeleteCommand(parseTaskNumber(fullCommand, commandType));
             case ON -> new OnCommand(parseDateRange(fullCommand));
+            case FIND -> new FindCommand(parseKeyword(fullCommand));
             case LIST -> new ListCommand();
             case UNDO -> new UndoCommand();
             case HELP -> new HelpCommand();
@@ -197,6 +199,24 @@ public class Parser {
         }
         return new DateRange(TaskDateTime.parseDate(argument.substring(0, toIndex)),
                 TaskDateTime.parseDate(argument.substring(toIndex + TO_SEPARATOR.length())));
+    }
+
+    /**
+     * Returns the text that the given command searches task descriptions for.
+     * Everything after the keyword is searched for as it stands, so a keyword
+     * of several words looks for that whole phrase.
+     *
+     * @param command Command in the form "find &lt;keyword&gt;".
+     * @return Text to look for in each task description.
+     * @throws SerangoonerException If no keyword is given.
+     */
+    public static String parseKeyword(String command) {
+        String keyword = argumentOf(command, CommandType.FIND);
+        if (keyword.isEmpty()) {
+            throw new SerangoonerException("pls give me something to look for: "
+                    + CommandType.FIND.getSyntax());
+        }
+        return keyword;
     }
 
     /**

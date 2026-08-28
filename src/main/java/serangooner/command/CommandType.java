@@ -12,6 +12,7 @@ public enum CommandType {
     EVENT("event", "event <description> from <date> to <date>", "add an event"),
     LIST("list", "list", "view all saved tasks"),
     ON("on", "on <date> [to <date>]", "view deadlines and events on a date or within a range"),
+    FIND("find", "find <keyword>", "find tasks whose description carries a keyword"),
     MARK("mark", "mark <number>", "mark a task as done"),
     UNMARK("unmark", "unmark <number>", "mark a task as incomplete"),
     DELETE("delete", "delete <number>", "delete a task"),
