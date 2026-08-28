@@ -154,4 +154,170 @@ public class TaskListTest {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
         assertTrue(tasks.occurringOn(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 1)).isEmpty());
     }
+
+    @Test
+    public void undo_afterUnmark_leavesTaskDoneAgain() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+        tasks.mark(1);
+        tasks.unmark(1);
+
+        assertTrue(tasks.undo());
+
+        assertTrue(tasks.getTasks().get(0).isDone());
+    }
+
+    @Test
+    public void undo_severalEdits_reversesThemMostRecentFirst() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("read book"));
+        tasks.add(new Todo("write essay"));
+        tasks.delete(1);
+
+        assertTrue(tasks.undo());
+        assertEquals(2, tasks.size());
+        assertEquals("[T][ ] read book", tasks.getTasks().get(0).toString());
+
+        assertTrue(tasks.undo());
+        assertEquals(1, tasks.size());
+        assertEquals("[T][ ] read book", tasks.getTasks().get(0).toString());
+    }
+
+    @Test
+    public void undo_everyEditUndone_returnsFalseOnceMore() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("read book"));
+
+        assertTrue(tasks.undo());
+        assertFalse(tasks.undo());
+    }
+
+    @Test
+    public void occurringOn_rangeEndingOnTheTaskDate_includesIt() {
+        TaskList tasks = new TaskList(List.of(new Deadline("submit ip", "2026-09-05")));
+        assertEquals(1, tasks.occurringOn(LocalDate.of(2026, 9, 1),
+                LocalDate.of(2026, 9, 5)).size());
+    }
+
+    @Test
+    public void occurringOn_rangeStartingOnTheTaskDate_includesIt() {
+        TaskList tasks = new TaskList(List.of(new Deadline("submit ip", "2026-09-01")));
+        assertEquals(1, tasks.occurringOn(LocalDate.of(2026, 9, 1),
+                LocalDate.of(2026, 9, 5)).size());
+    }
+
+    @Test
+    public void mark_alreadyDoneTask_leavesItDone() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+        tasks.mark(1);
+        tasks.mark(1);
+        assertTrue(tasks.getTasks().get(0).isDone());
+    }
+
+    @Test
+    public void delete_numberOutOfRange_exceptionThrown() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+        assertThrows(SerangoonerException.class, () -> tasks.delete(2));
+        assertThrows(SerangoonerException.class, () -> tasks.delete(0));
+    }
+
+    @Test
+    public void unmark_numberOutOfRange_exceptionThrown() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+        assertThrows(SerangoonerException.class, () -> tasks.unmark(2));
+    }
+
+    @Test
+    public void size_afterAddAndDelete_tracksTheCount() {
+        TaskList tasks = new TaskList();
+        assertEquals(0, tasks.size());
+        tasks.add(new Todo("read book"));
+        tasks.add(new Todo("write essay"));
+        assertEquals(2, tasks.size());
+        tasks.delete(1);
+        assertEquals(1, tasks.size());
+    }
+
+    @Test
+    public void entries_emptyList_returnsNothing() {
+        assertEquals(List.of(), new TaskList().entries());
+    }
+
+    @Test
+    public void entries_always_pairsEachNumberWithItsOwnTask() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book"), new Todo("write essay")));
+        List<TaskList.Entry> entries = tasks.entries();
+        assertEquals(2, entries.get(1).number());
+        assertSame(tasks.getTasks().get(1), entries.get(1).task());
+    }
+
+    @Test
+    public void mark_validNumber_returnsTheTaskItMarked() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+        assertSame(tasks.getTasks().get(0), tasks.mark(1));
+    }
+
+    @Test
+    public void unmark_validNumber_returnsTheTaskItUnmarked() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+        tasks.mark(1);
+        assertSame(tasks.getTasks().get(0), tasks.unmark(1));
+    }
+
+    @Test
+    public void occurringOn_taskCarryingNoDate_leavesItOut() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+        assertEquals(List.of(),
+                tasks.occurringOn(LocalDate.MIN, LocalDate.MAX));
+    }
+
+    @Test
+    public void undo_afterAFailedEdit_hasNothingToReverse() {
+        // A refused edit must leave no undo action behind, or undo would reverse
+        // a change that never happened.
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+
+        assertThrows(SerangoonerException.class, () -> tasks.mark(99));
+        assertThrows(SerangoonerException.class, () -> tasks.unmark(0));
+        assertThrows(SerangoonerException.class, () -> tasks.delete(2));
+
+        assertFalse(tasks.undo());
+    }
+
+    @Test
+    public void undo_failedEditAfterASuccessfulOne_stillReversesTheSuccessfulOne() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("read book"));
+        assertThrows(SerangoonerException.class, () -> tasks.mark(5));
+
+        assertTrue(tasks.undo());
+
+        assertEquals(0, tasks.size());
+    }
+
+    @Test
+    public void delete_middleTask_thenUndo_putsItBackAtItsOldPosition() {
+        TaskList tasks = new TaskList(List.of(new Todo("first"), new Todo("second"),
+                new Todo("third")));
+        tasks.delete(2);
+        assertEquals("[T][ ] third", tasks.getTasks().get(1).toString());
+
+        assertTrue(tasks.undo());
+
+        assertEquals(3, tasks.size());
+        assertEquals("[T][ ] second", tasks.getTasks().get(1).toString());
+    }
+
+    @Test
+    public void add_twoTasksReadingAlike_undoRemovesOnlyTheOneJustAdded() {
+        TaskList tasks = new TaskList();
+        Todo first = new Todo("read book");
+        Todo second = new Todo("read book");
+        tasks.add(first);
+        tasks.add(second);
+
+        assertTrue(tasks.undo());
+
+        assertEquals(1, tasks.size());
+        assertSame(first, tasks.getTasks().get(0));
+    }
 }

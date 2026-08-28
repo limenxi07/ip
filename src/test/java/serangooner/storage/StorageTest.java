@@ -120,4 +120,88 @@ public class StorageTest {
         Storage storage = new Storage(file);
         assertThrows(SerangoonerException.class, () -> storage.save(List.of(new Todo("read book"))));
     }
+
+    @Test
+    public void save_fileWithExistingTasks_replacesThemInsteadOfAppending(@TempDir Path directory)
+            throws IOException {
+        Path file = directory.resolve("serangooner.txt");
+        Storage storage = new Storage(file);
+        storage.save(List.of(new Todo("read book"), new Todo("water plants")));
+
+        storage.save(List.of(new Todo("call mum")));
+
+        List<String> lines = Files.readAllLines(file);
+        assertEquals(1, lines.size());
+        assertTrue(lines.get(0).contains("call mum"));
+    }
+
+    @Test
+    public void saveThenLoad_everyTaskTypeDone_restoresTheDoneState(@TempDir Path directory) {
+        Storage storage = new Storage(directory.resolve("serangooner.txt"));
+        Task todo = new Todo("read book");
+        Task deadline = new Deadline("submit ip", "2026-09-01");
+        Task event = new Event("orbital demo", "2026-09-05 1400", "2026-09-05 1600");
+        todo.markDone();
+        deadline.markDone();
+        event.markDone();
+
+        storage.save(List.of(todo, deadline, event));
+        List<Task> loaded = storage.load().tasks();
+
+        assertEquals(3, loaded.size());
+        assertTrue(loaded.get(0).isDone());
+        assertTrue(loaded.get(1).isDone());
+        assertTrue(loaded.get(2).isDone());
+    }
+
+    @Test
+    public void load_lineWithTooManyFields_skipsIt(@TempDir Path directory) throws IOException {
+        Path file = directory.resolve("serangooner.txt");
+        Files.write(file, List.of("T | 0 | read book | and one field too many"));
+
+        Storage.LoadResult result = new Storage(file).load();
+
+        assertEquals(List.of(), result.tasks());
+        assertEquals(1, result.skippedLineCount());
+    }
+
+    @Test
+    public void saveThenLoad_descriptionCarryingTheFieldSeparator_losesThatTask(
+            @TempDir Path directory) {
+        // A description carrying " | " writes an extra field, so the line reads
+        // back as one of the wrong length and is skipped. Pinned as known
+        // behaviour: the task is silently lost on the next load.
+        Storage storage = new Storage(directory.resolve("serangooner.txt"));
+        storage.save(List.of(new Todo("read book | write essay")));
+
+        Storage.LoadResult result = storage.load();
+
+        assertEquals(List.of(), result.tasks());
+        assertEquals(1, result.skippedLineCount());
+    }
+
+    @Test
+    public void load_emptyFile_returnsEmptyResult(@TempDir Path directory) throws IOException {
+        Path file = directory.resolve("serangooner.txt");
+        Files.write(file, List.of());
+
+        Storage.LoadResult result = new Storage(file).load();
+
+        assertEquals(List.of(), result.tasks());
+        assertEquals(0, result.skippedLineCount());
+        assertEquals("", result.errorMessage());
+    }
+
+    @Test
+    public void saveThenLoad_manyTasks_keepsThemInTheOrderTheyWereWritten(
+            @TempDir Path directory) {
+        Storage storage = new Storage(directory.resolve("serangooner.txt"));
+        storage.save(List.of(new Todo("first"), new Todo("second"), new Todo("third")));
+
+        List<Task> loaded = storage.load().tasks();
+
+        assertEquals("[T][ ] first", loaded.get(0).toString());
+        assertEquals("[T][ ] second", loaded.get(1).toString());
+        assertEquals("[T][ ] third", loaded.get(2).toString());
+    }
 }

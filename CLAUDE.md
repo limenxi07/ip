@@ -30,10 +30,10 @@ reference is silent, follow the Google Java Style Guide.
   link — `{@link serangooner.ui.Ui Ui}` — so it costs no import.
 - **Java 25.** On macOS switch with `sdk use java 25.0.3.fx-zulu` before
   running or building.
-- No Gradle yet — compile and run directly (an `add-gradle-support` branch
-  exists on the remote but is not merged). Because sources are now nested, a
-  plain glob misses classes; compile with
-  `javac -d out $(find src/main/java -name '*.java')`.
+- **Gradle** drives the build — use the wrapper, never a bare `javac`:
+  `./gradlew build` compiles and runs the tests, `./gradlew run` starts the
+  bot, and `./gradlew shadowJar` packages `build/libs/serangooner.jar`. The
+  wrapper pins Gradle 9.6.1, so nothing needs installing.
 - The existing code has been brought in line with these rules — every class is
   packaged, and Javadoc replaces the old `/* */` headers. Keep it that way. **Do
   not refactor working code unprompted**; if you notice a violation, mention it
@@ -158,6 +158,20 @@ public double computeLocation(double x, double y, int zone)
 - Static-import assertions; use `assertThrows` for exception cases
 - Header comments not required in test code
 
+**Coverage target**
+
+- Test roughly the **top 50% of methods by value** in each class — the
+  complex, core, or business-critical ones. Judge a method by what breaking
+  it would cost, not by line count.
+- Skip the other half deliberately: getters, setters, faithful `@Override`s,
+  and one-line delegation earn no test. Padding the count to hit a number is
+  worse than not testing.
+- **Every code change updates the tests in the same commit.** New method
+  in the valuable half — write its tests. Changed behaviour — update the
+  tests that pin it. Deleted method — delete its tests. A commit that moves
+  logic without touching a test is incomplete unless nothing valuable moved.
+- `./gradlew test` must be green before the change is done.
+
 ## 5. Tag and push each increment
 
 Reference: https://git-mastery.org/lessons/tag/#/cs2103
@@ -189,7 +203,9 @@ me when the overall scope changes so I can update the README.
 - [ ] Java code follows naming, layout, and Javadoc rules above
 - [ ] No wildcard imports; braces on every loop/conditional
 - [ ] Javadoc on every new public class and method, first sentence a verb
-- [ ] Code compiles and runs on Java 25
+- [ ] `./gradlew build` passes on Java 25 (compiles and tests green)
+- [ ] Tests cover the valuable ~50% of methods, and every changed
+      method's tests were updated alongside it
 - [ ] Completing commit is tagged with the exact increment ID
 - [ ] Commit and tag both pushed to the forked repo
 - [ ] AI usage citation still accurate

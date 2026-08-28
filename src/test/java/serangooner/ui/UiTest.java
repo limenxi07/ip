@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import serangooner.storage.Storage;
 import serangooner.task.Deadline;
+import serangooner.task.Event;
 import serangooner.task.Task;
 import serangooner.task.TaskDateTime;
 import serangooner.task.TaskList;
@@ -204,5 +205,79 @@ public class UiTest {
         uiReading("").showTasksInRange(new TaskList().occurringOn(date, date), date, date);
         assertEquals("you have nothing on 01 Sep 2026 :D" + System.lineSeparator(),
                 output.toString(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void showTaskUnmarked_task_saysItIsIncomplete() {
+        Task task = new Todo("read book");
+        task.markDone();
+
+        uiReading("").showTaskUnmarked(task);
+
+        assertEquals(List.of("marked task as incomplete: [T][\u2713] read book", ""),
+                printedLines());
+    }
+
+    @Test
+    public void showUndo_editUndone_saysSo() {
+        uiReading("").showUndo(true);
+        assertEquals(List.of("undid your last edit", ""), printedLines());
+    }
+
+    @Test
+    public void showDivider_always_drawsTheDividerAlone() {
+        uiReading("").showDivider();
+        assertEquals(List.of(DIVIDER, ""), printedLines());
+    }
+
+    @Test
+    public void hasNextCommand_inputAvailable_returnsTrue() {
+        assertTrue(uiReading("list" + System.lineSeparator()).hasNextCommand());
+    }
+
+    @Test
+    public void hasNextCommand_lastLineAlreadyRead_returnsFalse() {
+        Ui ui = uiReading("list" + System.lineSeparator());
+        ui.readCommand();
+        assertFalse(ui.hasNextCommand());
+    }
+
+    @Test
+    public void readCommand_blankLine_returnsItUnchanged() {
+        assertEquals("", uiReading(System.lineSeparator()).readCommand());
+    }
+
+    @Test
+    public void readCommand_lineWithSurroundingSpaces_leavesThemForTheParser() {
+        assertEquals("  list  ", uiReading("  list  " + System.lineSeparator()).readCommand());
+    }
+
+    @Test
+    public void showTaskAdded_event_callsItAnEvent() {
+        uiReading("").showTaskAdded(new Event("demo", "2026-09-05", "2026-09-06"), 1);
+        assertTrue(printedLines().get(0).startsWith("added event: "));
+    }
+
+    @Test
+    public void showTasksInRange_filteredListing_keepsTheNumbersFromTheFullList() {
+        // A number read off a filtered listing has to stay usable with mark and
+        // delete, so the listing must not renumber from one.
+        TaskList tasks = new TaskList(List.of(new Todo("read book"),
+                new Deadline("submit ip", "2026-09-01"),
+                new Deadline("submit tp", "2026-09-02")));
+        LocalDate start = LocalDate.of(2026, 9, 1);
+        LocalDate end = LocalDate.of(2026, 9, 2);
+
+        uiReading("").showTasksInRange(tasks.occurringOn(start, end), start, end);
+
+        List<String> lines = printedLines();
+        assertEquals(" 2. [D][ ] submit ip (by: 01 Sep 2026)", lines.get(1));
+        assertEquals(" 3. [D][ ] submit tp (by: 02 Sep 2026)", lines.get(2));
+    }
+
+    @Test
+    public void showTaskAdded_lastTaskInTheList_reportsTheCountItWasGiven() {
+        uiReading("").showTaskAdded(new Todo("read book"), 1);
+        assertEquals("you now have 1 pending task(s) :c", printedLines().get(1));
     }
 }
