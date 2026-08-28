@@ -2,6 +2,7 @@ package serangooner;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -32,11 +33,12 @@ public class TaskListTest {
     }
 
     @Test
-    public void addTodo_todo_addsTaskAndCountsIt() {
+    public void add_task_appendsItAndReturnsIt() {
         TaskList tasks = new TaskList();
-        String message = tasks.addTodo(new Todo("read book"));
+        Todo todo = new Todo("read book");
+        assertSame(todo, tasks.add(todo));
         assertEquals(1, tasks.size());
-        assertTrue(message.contains("[T][ ] read book"));
+        assertSame(todo, tasks.getTasks().get(0));
     }
 
     @Test
@@ -50,6 +52,7 @@ public class TaskListTest {
     public void mark_numberOutOfRange_exceptionThrown() {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
         assertThrows(SerangoonerException.class, () -> tasks.mark(2));
+        assertThrows(SerangoonerException.class, () -> tasks.mark(0));
     }
 
     @Test
@@ -61,9 +64,9 @@ public class TaskListTest {
     }
 
     @Test
-    public void delete_validNumber_removesTask() {
+    public void delete_validNumber_removesTaskAndReturnsIt() {
         TaskList tasks = new TaskList(List.of(new Todo("read book"), new Todo("write essay")));
-        tasks.delete(1);
+        assertEquals("[T][ ] read book", tasks.delete(1).toString());
         assertEquals(1, tasks.size());
         assertEquals("[T][ ] write essay", tasks.getTasks().get(0).toString());
     }
@@ -83,6 +86,14 @@ public class TaskListTest {
     }
 
     @Test
+    public void undo_afterAdd_removesTheTask() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("read book"));
+        assertTrue(tasks.undo());
+        assertEquals(0, tasks.size());
+    }
+
+    @Test
     public void undo_afterMark_leavesTaskIncomplete() {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
         tasks.mark(1);
@@ -96,17 +107,29 @@ public class TaskListTest {
     }
 
     @Test
-    public void occurringOn_singleDate_listsOnlyMatchingTasks() {
+    public void entries_always_numbersFromOne() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book"), new Todo("write essay")));
+
+        List<TaskList.Entry> entries = tasks.entries();
+
+        assertEquals(2, entries.size());
+        assertEquals(1, entries.get(0).number());
+        assertEquals(2, entries.get(1).number());
+        assertEquals("[T][ ] write essay", entries.get(1).task().toString());
+    }
+
+    @Test
+    public void occurringOn_singleDate_returnsOnlyMatchingTasks() {
         TaskList tasks = new TaskList(List.of(
                 new Todo("read book"),
                 new Deadline("submit ip", "2026-09-01"),
                 new Deadline("submit tp", "2026-09-02")));
 
-        String listing = tasks.occurringOn(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 1));
+        List<TaskList.Entry> entries =
+                tasks.occurringOn(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 1));
 
-        assertTrue(listing.contains("submit ip"));
-        assertFalse(listing.contains("submit tp"));
-        assertFalse(listing.contains("read book"));
+        assertEquals(1, entries.size());
+        assertEquals("[D][ ] submit ip (by: 01 Sep 2026)", entries.get(0).task().toString());
     }
 
     @Test
@@ -116,16 +139,17 @@ public class TaskListTest {
                 new Deadline("submit ip", "2026-09-01"),
                 new Deadline("submit tp", "2026-09-02")));
 
-        String listing = tasks.occurringOn(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 2));
+        List<TaskList.Entry> entries =
+                tasks.occurringOn(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 2));
 
-        assertTrue(listing.contains(" 2. [D][ ] submit ip (by: 01 Sep 2026)"));
-        assertTrue(listing.contains(" 3. [D][ ] submit tp (by: 02 Sep 2026)"));
+        assertEquals(2, entries.size());
+        assertEquals(2, entries.get(0).number());
+        assertEquals(3, entries.get(1).number());
     }
 
     @Test
-    public void occurringOn_noMatchingTask_saysSo() {
+    public void occurringOn_noMatchingTask_returnsNothing() {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
-        assertTrue(tasks.occurringOn(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 1))
-                .contains("you have nothing"));
+        assertTrue(tasks.occurringOn(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 1)).isEmpty());
     }
 }

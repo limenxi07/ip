@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -130,6 +132,100 @@ public class Ui {
      */
     public void showMessage(String message) {
         out.println(message);
+    }
+
+    /**
+     * Shows that the given task was added, and how many tasks now wait.
+     *
+     * @param task Task that was added.
+     * @param taskCount Number of tasks the list now holds.
+     */
+    public void showTaskAdded(Task task, int taskCount) {
+        out.println("added " + task.getTypeName() + ": " + task);
+        out.println("you now have " + taskCount + " pending task(s) :c");
+    }
+
+    /**
+     * Shows that the given task is now done.
+     *
+     * @param task Task that was marked.
+     */
+    public void showTaskMarked(Task task) {
+        out.println("marked task as done: " + task);
+    }
+
+    /**
+     * Shows that the given task is now incomplete.
+     *
+     * @param task Task that was unmarked.
+     */
+    public void showTaskUnmarked(Task task) {
+        out.println("marked task as incomplete: " + task);
+    }
+
+    /**
+     * Shows that the given task is gone from the list.
+     *
+     * @param task Task that was deleted.
+     */
+    public void showTaskDeleted(Task task) {
+        out.println("deleted task: " + task);
+    }
+
+    /**
+     * Shows whether the last edit was reversed.
+     *
+     * @param isUndone True if an edit was undone, false if there was none to undo.
+     */
+    public void showUndo(boolean isUndone) {
+        out.println(isUndone ? "undid your last edit" : "there's nothing to undo >:(");
+    }
+
+    /**
+     * Shows the whole task list.
+     *
+     * @param entries Every task, each with the number it is known by.
+     */
+    public void showTasks(List<TaskList.Entry> entries) {
+        showListing(entries, "your list", "your list is empty T-T add something with 'todo ...'");
+    }
+
+    /**
+     * Shows the tasks falling within a span of dates.
+     *
+     * @param entries Matching tasks, each with the number it is known by.
+     * @param start First date of the span, inclusive.
+     * @param end Last date of the span, inclusive.
+     */
+    public void showTasksInRange(List<TaskList.Entry> entries, LocalDate start, LocalDate end) {
+        String range = start.equals(end)
+                ? "on " + TaskDateTime.format(start)
+                : "between " + TaskDateTime.format(start) + " and " + TaskDateTime.format(end);
+        showListing(entries, "tasks " + range, "you have nothing " + range + " :D");
+    }
+
+    /**
+     * Shows a numbered listing of the given tasks, or says so when there are none.
+     *
+     * @param entries Tasks to list, each with the number it is known by.
+     * @param heading Line introducing the listing.
+     * @param emptyMessage Message to show in place of an empty listing.
+     */
+    private void showListing(List<TaskList.Entry> entries, String heading, String emptyMessage) {
+        if (entries.isEmpty()) {
+            out.println(emptyMessage);
+            return;
+        }
+
+        StringBuilder output = new StringBuilder(heading);
+        for (TaskList.Entry entry : entries) {
+            output.append(System.lineSeparator())
+                    .append(" ")
+                    .append(entry.number())
+                    .append(". ")
+                    .append(entry.task());
+        }
+        out.println(output);
     }
 
     /**

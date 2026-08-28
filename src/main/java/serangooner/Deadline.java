@@ -36,6 +36,11 @@ public class Deadline extends Task {
     }
 
     @Override
+    public String getTypeName() {
+        return "deadline";
+    }
+
+    @Override
     public boolean isWithin(LocalDate start, LocalDate end) {
         return isOverlapping(deadline, deadline, start, end);
     }

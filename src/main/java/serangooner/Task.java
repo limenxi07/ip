@@ -51,6 +51,13 @@ public class Task {
     }
 
     /**
+     * Returns the name this kind of task goes by in messages to the user.
+     */
+    public String getTypeName() {
+        return "task";
+    }
+
+    /**
      * Returns whether this task falls on or between the given dates.
      * A task that carries no date of its own never does.
      *

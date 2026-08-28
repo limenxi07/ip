@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -102,5 +103,84 @@ public class UiTest {
     @Test
     public void hasNextCommand_noInput_returnsFalse() {
         assertFalse(uiReading("").hasNextCommand());
+    }
+
+    @Test
+    public void showTaskAdded_task_namesItsKindAndTheCount() {
+        uiReading("").showTaskAdded(new Todo("read book"), 3);
+        assertEquals("added todo: [T][ ] read book" + System.lineSeparator()
+                + "you now have 3 pending task(s) :c" + System.lineSeparator(),
+                output.toString(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void showTaskAdded_deadline_callsItADeadline() {
+        uiReading("").showTaskAdded(new Deadline("submit ip", "2026-09-01"), 1);
+        assertTrue(output.toString(StandardCharsets.UTF_8).startsWith("added deadline: "));
+    }
+
+    @Test
+    public void showTaskMarked_task_saysItIsDone() {
+        uiReading("").showTaskMarked(new Todo("read book"));
+        assertEquals("marked task as done: [T][ ] read book" + System.lineSeparator(),
+                output.toString(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void showTaskDeleted_task_saysItIsGone() {
+        uiReading("").showTaskDeleted(new Todo("read book"));
+        assertEquals("deleted task: [T][ ] read book" + System.lineSeparator(),
+                output.toString(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void showUndo_nothingToUndo_saysSo() {
+        uiReading("").showUndo(false);
+        assertEquals("there's nothing to undo >:(" + System.lineSeparator(),
+                output.toString(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void showTasks_severalTasks_numbersThemUnderAHeading() {
+        uiReading("").showTasks(new TaskList(threeTasks()).entries());
+        List<String> lines = printedLines();
+        assertEquals("your list", lines.get(0));
+        assertEquals(" 1. [T][ ] read book", lines.get(1));
+        assertEquals(" 3. [T][ ] nap", lines.get(3));
+    }
+
+    @Test
+    public void showTasks_emptyList_saysSo() {
+        uiReading("").showTasks(new TaskList().entries());
+        assertTrue(output.toString(StandardCharsets.UTF_8).startsWith("your list is empty"));
+    }
+
+    @Test
+    public void showTasksInRange_singleDate_headsTheListingWithThatDay() {
+        TaskList tasks = new TaskList(List.of(new Deadline("submit ip", "2026-09-01")));
+        LocalDate date = LocalDate.of(2026, 9, 1);
+
+        uiReading("").showTasksInRange(tasks.occurringOn(date, date), date, date);
+
+        assertEquals("tasks on 01 Sep 2026", printedLines().get(0));
+    }
+
+    @Test
+    public void showTasksInRange_span_headsTheListingWithBothEnds() {
+        TaskList tasks = new TaskList(List.of(new Deadline("submit ip", "2026-09-01")));
+        LocalDate start = LocalDate.of(2026, 9, 1);
+        LocalDate end = LocalDate.of(2026, 9, 4);
+
+        uiReading("").showTasksInRange(tasks.occurringOn(start, end), start, end);
+
+        assertEquals("tasks between 01 Sep 2026 and 04 Sep 2026", printedLines().get(0));
+    }
+
+    @Test
+    public void showTasksInRange_noMatchingTask_saysSo() {
+        LocalDate date = LocalDate.of(2026, 9, 1);
+        uiReading("").showTasksInRange(new TaskList().occurringOn(date, date), date, date);
+        assertEquals("you have nothing on 01 Sep 2026 :D" + System.lineSeparator(),
+                output.toString(StandardCharsets.UTF_8));
     }
 }

@@ -30,6 +30,11 @@ public class Todo extends Task {
     }
 
     @Override
+    public String getTypeName() {
+        return "todo";
+    }
+
+    @Override
     public String toSaveFormat() {
         return SAVE_CODE + SAVE_DELIMITER + super.toSaveFormat();
     }

@@ -43,6 +43,11 @@ public class Event extends Task {
     }
 
     @Override
+    public String getTypeName() {
+        return "event";
+    }
+
+    @Override
     public boolean isWithin(LocalDate start, LocalDate end) {
         return isOverlapping(from, to, start, end);
     }

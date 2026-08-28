@@ -51,19 +51,17 @@ public class Serangooner {
                         return;
                     }
                     case HELP -> ui.showMessage(CommandType.helpText());
-                    case LIST -> ui.showMessage(tasks.toString());
-                    case ON -> {
-                        Parser.DateRange range = Parser.parseDateRange(command);
-                        ui.showMessage(tasks.occurringOn(range.start(), range.end()));
-                    }
-                    case UNDO -> ui.showMessage(tasks.undo()
-                            ? "undid your last edit" : "there's nothing to undo >:(");
-                    case MARK -> ui.showMessage(tasks.mark(Parser.parseTaskNumber(command, commandType)));
-                    case UNMARK -> ui.showMessage(tasks.unmark(Parser.parseTaskNumber(command, commandType)));
-                    case DELETE -> ui.showMessage(tasks.delete(Parser.parseTaskNumber(command, commandType)));
-                    case TODO -> ui.showMessage(tasks.addTodo(Parser.parseTodo(command)));
-                    case DEADLINE -> ui.showMessage(tasks.addDeadline(Parser.parseDeadline(command)));
-                    case EVENT -> ui.showMessage(tasks.addEvent(Parser.parseEvent(command)));
+                    case LIST -> ui.showTasks(tasks.entries());
+                    case ON -> showOccurringOn(Parser.parseDateRange(command));
+                    case UNDO -> ui.showUndo(tasks.undo());
+                    case MARK -> ui.showTaskMarked(tasks.mark(Parser.parseTaskNumber(command, commandType)));
+                    case UNMARK -> ui.showTaskUnmarked(
+                            tasks.unmark(Parser.parseTaskNumber(command, commandType)));
+                    case DELETE -> ui.showTaskDeleted(
+                            tasks.delete(Parser.parseTaskNumber(command, commandType)));
+                    case TODO -> showAdded(tasks.add(Parser.parseTodo(command)));
+                    case DEADLINE -> showAdded(tasks.add(Parser.parseDeadline(command)));
+                    case EVENT -> showAdded(tasks.add(Parser.parseEvent(command)));
                 }
                 if (commandType.isMutating()) {
                     storage.save(tasks.getTasks());
@@ -73,6 +71,26 @@ public class Serangooner {
             }
             ui.showDivider();
         }
+    }
+
+    /**
+     * Shows that the given task was added, along with the size the list has
+     * reached now that it is in.
+     *
+     * @param task Task that was just added.
+     */
+    private void showAdded(Task task) {
+        ui.showTaskAdded(task, tasks.size());
+    }
+
+    /**
+     * Shows the tasks falling within the given span of dates.
+     *
+     * @param range Span of dates to report on.
+     */
+    private void showOccurringOn(Parser.DateRange range) {
+        ui.showTasksInRange(tasks.occurringOn(range.start(), range.end()),
+                range.start(), range.end());
     }
 
     /**

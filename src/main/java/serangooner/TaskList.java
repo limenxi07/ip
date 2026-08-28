@@ -12,13 +12,14 @@ import java.util.function.Predicate;
  * Stores and edits the tasks entered by the user.
  * The list lives entirely in memory and knows nothing of where its tasks
  * came from, so writing them back to disk is left to whoever holds both
- * this list and a {@link Storage}.
+ * this list and a {@link Storage}. It says nothing to the user either: an
+ * edit gives back the task it touched, and how that is worded is for the
+ * {@link Ui} to decide.
  * Every edit pushes an action that reverses it, so the most recent edit
  * can be undone.
  */
 public class TaskList {
-    private static final int MAX_TASKS = 100;
-    private final List<Task> tasks = new ArrayList<>(MAX_TASKS);
+    private final List<Task> tasks = new ArrayList<>();
     // Undo stack authored with the help of Codex.
     private final Deque<Runnable> undoActions = new ArrayDeque<>();
 
@@ -47,91 +48,117 @@ public class TaskList {
     }
 
     /**
-     * Adds the given todo to the list.
-     *
-     * @param todo Todo to add.
-     * @return Confirmation message naming the task that was added.
+     * Returns the number of tasks currently stored.
      */
-    public String addTodo(Todo todo) {
-        return add(todo, "todo");
-    }
-
-    /**
-     * Adds the given deadline to the list.
-     *
-     * @param deadline Deadline to add.
-     * @return Confirmation message naming the task that was added.
-     */
-    public String addDeadline(Deadline deadline) {
-        return add(deadline, "deadline");
-    }
-
-    /**
-     * Adds the given event to the list.
-     *
-     * @param event Event to add.
-     * @return Confirmation message naming the task that was added.
-     */
-    public String addEvent(Event event) {
-        return add(event, "event");
+    public int size() {
+        return tasks.size();
     }
 
     /**
      * Adds the given task to the end of the list.
      *
      * @param task Task to add.
-     * @param label Name this kind of task goes by in the confirmation message.
-     * @return Confirmation message naming the task that was added.
+     * @return Task that was added.
      */
-    private String add(Task task, String label) {
+    public Task add(Task task) {
         tasks.add(task);
         undoActions.push(() -> tasks.remove(task));
-        return "added " + label + ": " + task + System.lineSeparator()
-                + "you now have " + size() + " pending task(s) :c";
+        return task;
     }
 
     /**
      * Marks the task at the given position as done.
      *
      * @param taskNumber Position of the task in the list, counting from one.
-     * @return Confirmation message naming the task that was marked.
+     * @return Task that was marked.
      * @throws SerangoonerException If no task holds that position.
      */
-    public String mark(int taskNumber) {
+    public Task mark(int taskNumber) {
         Task task = getTask(taskNumber, "MARK");
         boolean wasDone = task.isDone();
         task.markDone();
         undoActions.push(() -> setDone(task, wasDone));
-        return "marked task as done: " + task;
+        return task;
     }
 
     /**
      * Marks the task at the given position as incomplete.
      *
      * @param taskNumber Position of the task in the list, counting from one.
-     * @return Confirmation message naming the task that was unmarked.
+     * @return Task that was unmarked.
      * @throws SerangoonerException If no task holds that position.
      */
-    public String unmark(int taskNumber) {
+    public Task unmark(int taskNumber) {
         Task task = getTask(taskNumber, "UNMARK");
         boolean wasDone = task.isDone();
         task.markNotDone();
         undoActions.push(() -> setDone(task, wasDone));
-        return "marked task as incomplete: " + task;
+        return task;
     }
 
     /**
      * Deletes the task at the given position.
      *
      * @param taskNumber Position of the task in the list, counting from one.
-     * @return Confirmation message naming the task that was deleted.
+     * @return Task that was deleted.
      * @throws SerangoonerException If no task holds that position.
      */
-    public String delete(int taskNumber) {
+    public Task delete(int taskNumber) {
         Task task = getTask(taskNumber, "DELETE");
         tasks.remove(taskNumber - 1);
         undoActions.push(() -> tasks.add(taskNumber - 1, task));
-        return "deleted task: " + task;
+        return task;
+    }
+
+    /**
+     * Reverses the most recent edit made to the list.
+     *
+     * @return True if an edit was undone, false if there was nothing to undo.
+     */
+    public boolean undo() {
+        if (undoActions.isEmpty()) {
+            return false;
+        }
+        undoActions.pop().run();
+        return true;
+    }
+
+    /**
+     * Returns every task, each with the number it is known by.
+     */
+    public List<Entry> entries() {
+        return entriesMatching(task -> true);
+    }
+
+    /**
+     * Returns the tasks falling on or between the given dates, each with the
+     * number it is known by.
+     *
+     * @param start First date of the range, inclusive.
+     * @param end Last date of the range, inclusive.
+     * @return Matching tasks, in the order they are stored.
+     */
+    public List<Entry> occurringOn(LocalDate start, LocalDate end) {
+        return entriesMatching(task -> task.isWithin(start, end));
+    }
+
+    /**
+     * Returns the tasks that the given filter accepts.
+     * A task keeps the number it has in the full list, so that a number read
+     * off any listing stays usable with mark, unmark and delete.
+     *
+     * @param filter Decides which tasks are returned.
+     * @return Matching tasks, in the order they are stored.
+     */
+    private List<Entry> entriesMatching(Predicate<Task> filter) {
+        List<Entry> matches = new ArrayList<>();
+        for (int i = 0; i < tasks.size(); i++) {
+            Task task = tasks.get(i);
+            if (filter.test(task)) {
+                matches.add(new Entry(i + 1, task));
+            }
+        }
+        return matches;
     }
 
     /**
@@ -165,73 +192,12 @@ public class TaskList {
     }
 
     /**
-     * Returns the tasks falling on or between the given dates.
+     * Represents a task together with the number the user knows it by.
+     * The number is the task's position in the full list, so that a number
+     * read off a filtered listing stays usable with mark, unmark and delete.
      *
-     * @param start First date of the range, inclusive.
-     * @param end Last date of the range, inclusive.
-     * @return Listing of the matching tasks, keeping the numbers they have in
-     *         the full list.
+     * @param number Position of the task in the full list, counting from one.
+     * @param task Task at that position.
      */
-    public String occurringOn(LocalDate start, LocalDate end) {
-        String range = start.equals(end)
-                ? "on " + TaskDateTime.format(start)
-                : "between " + TaskDateTime.format(start) + " and " + TaskDateTime.format(end);
-        return listTasks("tasks " + range, "you have nothing " + range + " :D",
-                task -> task.isWithin(start, end));
-    }
-
-    /**
-     * Returns the number of tasks currently stored.
-     */
-    public int size() {
-        return tasks.size();
-    }
-
-    /**
-     * Reverses the most recent edit made to the list.
-     *
-     * @return True if an edit was undone, false if there was nothing to undo.
-     */
-    public boolean undo() {
-        if (undoActions.isEmpty()) {
-            return false;
-        }
-        undoActions.pop().run();
-        return true;
-    }
-
-    /**
-     * Returns a numbered listing of the tasks that the given filter accepts.
-     * A task keeps the number it has in the full list, so that a number read
-     * off any listing stays usable with mark, unmark and delete.
-     *
-     * @param heading Line introducing the listing.
-     * @param emptyMessage Message to return when the filter accepts no task.
-     * @param filter Decides which tasks appear in the listing.
-     * @return Listing to show the user.
-     */
-    private String listTasks(String heading, String emptyMessage, Predicate<Task> filter) {
-        StringBuilder output = new StringBuilder(heading);
-        boolean hasMatch = false;
-        for (int i = 0; i < tasks.size(); i++) {
-            Task task = tasks.get(i);
-            if (!filter.test(task)) {
-                continue;
-            }
-
-            hasMatch = true;
-            output.append(System.lineSeparator())
-                    .append(" ")
-                    .append(i + 1)
-                    .append(". ")
-                    .append(task);
-        }
-        return hasMatch ? output.toString() : emptyMessage;
-    }
-
-    @Override
-    public String toString() {
-        return listTasks("your list", "your list is empty T-T add something with 'todo ...'",
-                task -> true);
-    }
+    public record Entry(int number, Task task) { }
 }
