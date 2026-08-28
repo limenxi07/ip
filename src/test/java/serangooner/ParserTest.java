@@ -9,6 +9,19 @@ import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
 
+import serangooner.command.AddCommand;
+import serangooner.command.Command;
+import serangooner.command.CommandType;
+import serangooner.command.DeleteCommand;
+import serangooner.command.ExitCommand;
+import serangooner.command.HelpCommand;
+import serangooner.command.ListCommand;
+import serangooner.command.MarkCommand;
+import serangooner.command.OnCommand;
+import serangooner.command.UndoCommand;
+import serangooner.command.UnmarkCommand;
+import serangooner.task.DateRange;
+
 public class ParserTest {
     @Test
     public void parse_eachKeyword_returnsTheMatchingCommand() {
@@ -156,21 +169,21 @@ public class ParserTest {
 
     @Test
     public void parseDateRange_singleDate_coversThatDayAlone() {
-        Parser.DateRange range = Parser.parseDateRange("on 2026-09-01");
+        DateRange range = Parser.parseDateRange("on 2026-09-01");
         assertEquals(LocalDate.of(2026, 9, 1), range.start());
         assertEquals(LocalDate.of(2026, 9, 1), range.end());
     }
 
     @Test
     public void parseDateRange_dateWithTime_keepsTheDateAlone() {
-        Parser.DateRange range = Parser.parseDateRange("on 2026-09-01 1800");
+        DateRange range = Parser.parseDateRange("on 2026-09-01 1800");
         assertEquals(LocalDate.of(2026, 9, 1), range.start());
         assertEquals(LocalDate.of(2026, 9, 1), range.end());
     }
 
     @Test
     public void parseDateRange_twoDates_coversBothEnds() {
-        Parser.DateRange range = Parser.parseDateRange("on 2026-09-01 to 2026-09-04");
+        DateRange range = Parser.parseDateRange("on 2026-09-01 to 2026-09-04");
         assertEquals(LocalDate.of(2026, 9, 1), range.start());
         assertEquals(LocalDate.of(2026, 9, 4), range.end());
     }

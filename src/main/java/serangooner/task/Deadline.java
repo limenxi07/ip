@@ -1,7 +1,9 @@
-package serangooner;
+package serangooner.task;
 
 import java.time.LocalDate;
 import java.util.Optional;
+
+import serangooner.SerangoonerException;
 
 /**
  * Represents a task that must be completed by a given date or time.
@@ -31,7 +33,7 @@ public class Deadline extends Task {
      * @param fields Fields that one line of the save file was split into.
      * @return Deadline the line describes, or nothing if it cannot be read.
      */
-    static Optional<Task> fromSaveFields(String[] fields) {
+    public static Optional<Task> fromSaveFields(String[] fields) {
         return readSaveLine(fields, SAVE_FIELDS, f -> new Deadline(f[2], f[3]));
     }
 

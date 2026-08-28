@@ -1,4 +1,8 @@
-package serangooner;
+package serangooner.command;
+
+import serangooner.storage.Storage;
+import serangooner.task.TaskList;
+import serangooner.ui.Ui;
 
 /**
  * Shows the whole task list.

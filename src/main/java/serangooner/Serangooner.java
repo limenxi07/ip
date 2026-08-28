@@ -2,6 +2,11 @@ package serangooner;
 
 import java.nio.file.Path;
 
+import serangooner.command.Command;
+import serangooner.storage.Storage;
+import serangooner.task.TaskList;
+import serangooner.ui.Ui;
+
 /**
  * Runs the Serangooner chatbot as a command line program.
  * This class is the one place that holds the user interface, the task list

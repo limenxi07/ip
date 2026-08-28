@@ -1,4 +1,4 @@
-package serangooner;
+package serangooner.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -12,6 +12,13 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+
+import serangooner.storage.Storage;
+import serangooner.task.Deadline;
+import serangooner.task.Task;
+import serangooner.task.TaskDateTime;
+import serangooner.task.TaskList;
+import serangooner.task.Todo;
 
 public class UiTest {
     private static final String DIVIDER = "━━━ . °‧ 𓆝 𓆟 𓆞 ·｡";
@@ -49,19 +56,26 @@ public class UiTest {
     }
 
     @Test
-    public void showHelp_everyCommand_numbersThemAndEndsWithTheDateHint() {
-        uiReading("").showHelp(CommandType.values());
+    public void showHelp_severalCommands_numbersThemAndEndsWithTheDateHint() {
+        List<String> commands = List.of("todo <description> - add a task",
+                "list - view all saved tasks", "bye - exit serangooner");
+
+        uiReading("").showHelp(commands);
 
         List<String> lines = printedLines();
         assertEquals("serangooner commands:", lines.get(0));
-        assertEquals("1. todo <description> - add a task without a date or time", lines.get(1));
-        assertEquals(TaskDateTime.FORMAT_HINT, lines.get(CommandType.values().length + 1));
+        assertEquals("1. todo <description> - add a task", lines.get(1));
+        assertEquals("3. bye - exit serangooner", lines.get(3));
+        assertEquals(TaskDateTime.FORMAT_HINT, lines.get(commands.size() + 1));
     }
 
     @Test
-    public void showHelp_givenCommands_listsOnlyThose() {
-        uiReading("").showHelp(new CommandType[]{CommandType.BYE});
-        assertEquals("1. bye - exit serangooner", printedLines().get(1));
+    public void showHelp_noCommands_printsTheHeadingAndTheDateHintAlone() {
+        uiReading("").showHelp(List.of());
+
+        List<String> lines = printedLines();
+        assertEquals("serangooner commands:", lines.get(0));
+        assertEquals(TaskDateTime.FORMAT_HINT, lines.get(1));
     }
 
     @Test

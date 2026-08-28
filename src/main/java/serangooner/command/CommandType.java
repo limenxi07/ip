@@ -1,4 +1,4 @@
-package serangooner;
+package serangooner.command;
 
 // Enum-based command library refactored with the help of Codex.
 /**

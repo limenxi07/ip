@@ -1,4 +1,4 @@
-package serangooner;
+package serangooner.ui;
 
 import java.io.IOException;
 import java.nio.file.Files;

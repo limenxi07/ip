@@ -1,10 +1,15 @@
-package serangooner;
+package serangooner.ui;
 
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
+
+import serangooner.storage.Storage;
+import serangooner.task.Task;
+import serangooner.task.TaskDateTime;
+import serangooner.task.TaskList;
 
 /**
  * Deals with everything the user reads and types on the command line.
@@ -122,20 +127,21 @@ public class Ui {
     }
 
     /**
-     * Shows every command the user can enter, with its syntax and what it does.
+     * Shows the given commands as a numbered list, ending with the note on how
+     * a date must be written.
+     * What each line says is for the caller to decide; this class only decides
+     * how the listing is laid out.
      *
-     * @param commands Commands to list, in the order they should be shown.
+     * @param commands Descriptions to list, in the order they should be shown.
      */
-    public void showHelp(CommandType[] commands) {
+    public void showHelp(List<String> commands) {
         StringBuilder output = new StringBuilder("serangooner commands:");
         int commandNumber = 1;
-        for (CommandType command : commands) {
+        for (String command : commands) {
             output.append(System.lineSeparator())
                     .append(commandNumber++)
                     .append(". ")
-                    .append(command.getSyntax())
-                    .append(" - ")
-                    .append(command.getDescription());
+                    .append(command);
         }
         out.println(output.append(System.lineSeparator()).append(TaskDateTime.FORMAT_HINT));
     }

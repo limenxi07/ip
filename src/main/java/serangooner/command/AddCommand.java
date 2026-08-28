@@ -1,4 +1,9 @@
-package serangooner;
+package serangooner.command;
+
+import serangooner.storage.Storage;
+import serangooner.task.Task;
+import serangooner.task.TaskList;
+import serangooner.ui.Ui;
 
 /**
  * Adds a task to the list.

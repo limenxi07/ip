@@ -1,4 +1,4 @@
-package serangooner;
+package serangooner.command;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -14,6 +14,14 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
+import serangooner.Parser;
+import serangooner.SerangoonerException;
+import serangooner.storage.Storage;
+import serangooner.task.Deadline;
+import serangooner.task.TaskList;
+import serangooner.task.Todo;
+import serangooner.ui.Ui;
 
 public class CommandTest {
     private final ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -131,7 +139,11 @@ public class CommandTest {
     @Test
     public void execute_helpCommand_listsEveryCommand(@TempDir Path directory) {
         new HelpCommand().execute(new TaskList(), ui(), storageIn(directory));
+
         assertTrue(printed().startsWith("serangooner commands:"));
+        for (CommandType command : CommandType.values()) {
+            assertTrue(printed().contains(command.getSyntax() + " - " + command.getDescription()));
+        }
     }
 
     @Test

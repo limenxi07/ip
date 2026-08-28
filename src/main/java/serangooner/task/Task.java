@@ -1,8 +1,10 @@
-package serangooner;
+package serangooner.task;
 
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.function.Function;
+
+import serangooner.SerangoonerException;
 
 /**
  * Represents a single task item tracked by Serangooner.

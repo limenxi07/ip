@@ -3,6 +3,23 @@ package serangooner;
 import java.time.LocalDate;
 import java.util.Arrays;
 
+import serangooner.command.AddCommand;
+import serangooner.command.Command;
+import serangooner.command.CommandType;
+import serangooner.command.DeleteCommand;
+import serangooner.command.ExitCommand;
+import serangooner.command.HelpCommand;
+import serangooner.command.ListCommand;
+import serangooner.command.MarkCommand;
+import serangooner.command.OnCommand;
+import serangooner.command.UndoCommand;
+import serangooner.command.UnmarkCommand;
+import serangooner.task.DateRange;
+import serangooner.task.Deadline;
+import serangooner.task.Event;
+import serangooner.task.TaskDateTime;
+import serangooner.task.Todo;
+
 // Command parsing gathered into one class with the help of Claude Code.
 /**
  * Makes sense of the lines that the user types.
@@ -13,7 +30,8 @@ import java.util.Arrays;
  * dates, with nothing left for the command to work out later.
  * Surrounding space is the user's to leave in, so every method here trims
  * the line before making sense of it.
- * Reading the save file is a separate concern and is left to {@link Storage}.
+ * Reading the save file is a separate concern and is left to
+ * {@link serangooner.storage.Storage Storage}.
  */
 public class Parser {
     private static final String BY_SEPARATOR = " by ";
@@ -214,27 +232,5 @@ public class Parser {
     private static SerangoonerException invalidFormat(CommandType commandType) {
         return new SerangoonerException("INVALID. pls use format: " + commandType.getSyntax()
                 + ". " + TaskDateTime.FORMAT_HINT);
-    }
-
-    /**
-     * Represents a span of dates, from a first day to a last day, both counted
-     * as part of the span.
-     * A range that ends before it starts cannot be built, so any range handed
-     * to the rest of the program is already known to make sense.
-     *
-     * @param start First date of the span.
-     * @param end Last date of the span.
-     */
-    public record DateRange(LocalDate start, LocalDate end) {
-        /**
-         * Constructs a span of dates.
-         *
-         * @throws SerangoonerException If the span ends before it starts.
-         */
-        public DateRange {
-            if (end.isBefore(start)) {
-                throw new SerangoonerException("that range ends before it starts o.O");
-            }
-        }
     }
 }
