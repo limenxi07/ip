@@ -4,6 +4,9 @@ package serangooner;
  * Represents a task that starts and ends at specified dates or times.
  */
 public class Event extends Task {
+    /** Code identifying an event in the save file. */
+    public static final String SAVE_CODE = "E";
+
     private final String from;
     private final String to;
 
@@ -53,6 +56,12 @@ public class Event extends Task {
         }
         return new String[]{command.substring(6, fromIndex),
                 command.substring(fromIndex + 6, toIndex), command.substring(toIndex + 4)};
+    }
+
+    @Override
+    public String toSaveFormat() {
+        return SAVE_CODE + SAVE_DELIMITER + super.toSaveFormat()
+                + SAVE_DELIMITER + from + SAVE_DELIMITER + to;
     }
 
     @Override

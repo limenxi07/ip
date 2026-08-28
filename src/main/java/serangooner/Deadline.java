@@ -4,6 +4,9 @@ package serangooner;
  * Represents a task that must be completed by a given date or time.
  */
 public class Deadline extends Task {
+    /** Code identifying a deadline in the save file. */
+    public static final String SAVE_CODE = "D";
+
     private final String deadline;
 
     /**
@@ -46,6 +49,11 @@ public class Deadline extends Task {
             throw new SerangoonerException("INVALID. pls use format: deadline <description> by <date>");
         }
         return new String[]{command.substring(9, byIndex), command.substring(byIndex + 4)};
+    }
+
+    @Override
+    public String toSaveFormat() {
+        return SAVE_CODE + SAVE_DELIMITER + super.toSaveFormat() + SAVE_DELIMITER + deadline;
     }
 
     @Override
