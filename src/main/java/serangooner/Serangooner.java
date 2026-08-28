@@ -50,7 +50,7 @@ public class Serangooner {
                         ui.showFarewell();
                         return;
                     }
-                    case HELP -> ui.showMessage(CommandType.helpText());
+                    case HELP -> ui.showHelp(CommandType.values());
                     case LIST -> ui.showTasks(tasks.entries());
                     case ON -> showOccurringOn(Parser.parseDateRange(command));
                     case UNDO -> ui.showUndo(tasks.undo());

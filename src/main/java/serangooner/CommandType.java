@@ -50,25 +50,4 @@ public enum CommandType {
     public boolean isMutating() {
         return isMutating;
     }
-
-    /**
-     * Returns a numbered listing of every command, its syntax and its description.
-     *
-     * @return Help text ready to be shown to the user.
-     */
-    public static String helpText() {
-        StringBuilder output = new StringBuilder("serangooner commands:");
-        int commandNumber = 1;
-        for (CommandType command : values()) {
-            output.append(System.lineSeparator())
-                    .append(commandNumber++)
-                    .append(". ")
-                    .append(command.syntax)
-                    .append(" - ")
-                    .append(command.description);
-        }
-        return output.append(System.lineSeparator())
-                .append(TaskDateTime.FORMAT_HINT)
-                .toString();
-    }
 }

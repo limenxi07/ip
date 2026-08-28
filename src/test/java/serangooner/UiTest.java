@@ -50,10 +50,19 @@ public class UiTest {
     }
 
     @Test
-    public void showMessage_anyMessage_printsItAlone() {
-        uiReading("").showMessage("added todo: [T][ ] read book");
-        assertEquals("added todo: [T][ ] read book" + System.lineSeparator(),
-                output.toString(StandardCharsets.UTF_8));
+    public void showHelp_everyCommand_numbersThemAndEndsWithTheDateHint() {
+        uiReading("").showHelp(CommandType.values());
+
+        List<String> lines = printedLines();
+        assertEquals("serangooner commands:", lines.get(0));
+        assertEquals("1. todo <description> - add a task without a date or time", lines.get(1));
+        assertEquals(TaskDateTime.FORMAT_HINT, lines.get(CommandType.values().length + 1));
+    }
+
+    @Test
+    public void showHelp_givenCommands_listsOnlyThose() {
+        uiReading("").showHelp(new CommandType[]{CommandType.BYE});
+        assertEquals("1. bye - exit serangooner", printedLines().get(1));
     }
 
     @Test

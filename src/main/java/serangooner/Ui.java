@@ -1,10 +1,7 @@
 package serangooner;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
@@ -16,7 +13,6 @@ import java.util.Scanner;
  * of interface only means replacing this class.
  */
 public class Ui {
-    private static final Path SOUND_FILE = Path.of("src/main/resources/faaah.mp3");
     private static final String DIVIDER = "━━━ . °‧ 𓆝 𓆟 𓆞 ·｡";
     private static final String BANNER =
             "  ____   U _____ u   ____        _      _   _     ____"
@@ -36,7 +32,7 @@ public class Ui {
 
     private final Scanner scanner;
     private final PrintStream out;
-    private final boolean isSoundEnabled;
+    private final SoundPlayer soundPlayer;
 
     /**
      * Constructs a user interface that talks to the console.
@@ -60,7 +56,7 @@ public class Ui {
     private Ui(InputStream in, PrintStream out, boolean isSoundEnabled) {
         this.scanner = new Scanner(in);
         this.out = out;
-        this.isSoundEnabled = isSoundEnabled;
+        this.soundPlayer = new SoundPlayer(isSoundEnabled);
     }
 
     /**
@@ -126,12 +122,22 @@ public class Ui {
     }
 
     /**
-     * Shows the given message to the user.
+     * Shows every command the user can enter, with its syntax and what it does.
      *
-     * @param message Message to show.
+     * @param commands Commands to list, in the order they should be shown.
      */
-    public void showMessage(String message) {
-        out.println(message);
+    public void showHelp(CommandType[] commands) {
+        StringBuilder output = new StringBuilder("serangooner commands:");
+        int commandNumber = 1;
+        for (CommandType command : commands) {
+            output.append(System.lineSeparator())
+                    .append(commandNumber++)
+                    .append(". ")
+                    .append(command.getSyntax())
+                    .append(" - ")
+                    .append(command.getDescription());
+        }
+        out.println(output.append(System.lineSeparator()).append(TaskDateTime.FORMAT_HINT));
     }
 
     /**
@@ -234,7 +240,7 @@ public class Ui {
      * @param message Explanation of what went wrong.
      */
     public void showError(String message) {
-        playSound();
+        soundPlayer.play();
         out.println(message);
     }
 
@@ -251,25 +257,5 @@ public class Ui {
     public void showFarewell() {
         out.println("bye~");
         out.println(DIVIDER);
-    }
-
-    /**
-     * Plays a funny sound to accompany an invalid command.
-     * The sound plays on a separate thread so that it never delays the next
-     * prompt, and is skipped when the audio file is absent.
-     */
-    private void playSound() {
-        // Authored with the help of Codex.
-        if (!isSoundEnabled || !Files.exists(SOUND_FILE)) {
-            return;
-        }
-
-        Thread.ofVirtual().start(() -> {
-            try {
-                new ProcessBuilder("afplay", SOUND_FILE.toString()).start().waitFor();
-            } catch (IOException | InterruptedException exception) {
-                Thread.currentThread().interrupt();
-            }
-        });
     }
 }
