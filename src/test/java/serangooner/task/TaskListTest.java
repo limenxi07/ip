@@ -269,4 +269,55 @@ public class TaskListTest {
         assertEquals(List.of(),
                 tasks.occurringOn(LocalDate.MIN, LocalDate.MAX));
     }
+
+    @Test
+    public void undo_afterAFailedEdit_hasNothingToReverse() {
+        // A refused edit must leave no undo action behind, or undo would reverse
+        // a change that never happened.
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+
+        assertThrows(SerangoonerException.class, () -> tasks.mark(99));
+        assertThrows(SerangoonerException.class, () -> tasks.unmark(0));
+        assertThrows(SerangoonerException.class, () -> tasks.delete(2));
+
+        assertFalse(tasks.undo());
+    }
+
+    @Test
+    public void undo_failedEditAfterASuccessfulOne_stillReversesTheSuccessfulOne() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("read book"));
+        assertThrows(SerangoonerException.class, () -> tasks.mark(5));
+
+        assertTrue(tasks.undo());
+
+        assertEquals(0, tasks.size());
+    }
+
+    @Test
+    public void delete_middleTask_thenUndo_putsItBackAtItsOldPosition() {
+        TaskList tasks = new TaskList(List.of(new Todo("first"), new Todo("second"),
+                new Todo("third")));
+        tasks.delete(2);
+        assertEquals("[T][ ] third", tasks.getTasks().get(1).toString());
+
+        assertTrue(tasks.undo());
+
+        assertEquals(3, tasks.size());
+        assertEquals("[T][ ] second", tasks.getTasks().get(1).toString());
+    }
+
+    @Test
+    public void add_twoTasksReadingAlike_undoRemovesOnlyTheOneJustAdded() {
+        TaskList tasks = new TaskList();
+        Todo first = new Todo("read book");
+        Todo second = new Todo("read book");
+        tasks.add(first);
+        tasks.add(second);
+
+        assertTrue(tasks.undo());
+
+        assertEquals(1, tasks.size());
+        assertSame(first, tasks.getTasks().get(0));
+    }
 }

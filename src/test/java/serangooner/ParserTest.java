@@ -29,6 +29,7 @@ import serangooner.command.UndoCommand;
 import serangooner.command.UnmarkCommand;
 import serangooner.storage.Storage;
 import serangooner.task.DateRange;
+import serangooner.task.Deadline;
 import serangooner.task.TaskList;
 import serangooner.task.Todo;
 import serangooner.ui.Ui;
@@ -307,5 +308,47 @@ public class ParserTest {
 
         assertEquals(1, tasks.size());
         assertEquals("[T][ ] read book", tasks.getTasks().get(0).toString());
+    }
+
+    @Test
+    public void parseEvent_descriptionCarryingTheEndSeparator_looksForItAfterTheStartSeparator() {
+        // " to " inside the description must not be mistaken for the one that
+        // introduces the end date, so the search starts at " from ".
+        assertEquals("[E][ ] go to town (from: 03 Sep 2026 to: 04 Sep 2026)",
+                Parser.parseEvent("event go to town from 2026-09-03 to 2026-09-04").toString());
+    }
+
+    @Test
+    public void parse_markAndUnmark_carryTheirNumbersIntoTheCommand(@TempDir Path directory) {
+        TaskList tasks = new TaskList(List.of(new Todo("read book"), new Todo("write essay")));
+        Ui ui = new Ui(new ByteArrayInputStream(new byte[0]),
+                new PrintStream(new ByteArrayOutputStream(), true, StandardCharsets.UTF_8));
+        Storage storage = new Storage(directory.resolve("tasks.txt"));
+
+        Parser.parse("mark 2").execute(tasks, ui, storage);
+
+        assertFalse(tasks.getTasks().get(0).isDone());
+        assertTrue(tasks.getTasks().get(1).isDone());
+
+        Parser.parse("unmark 2").execute(tasks, ui, storage);
+
+        assertFalse(tasks.getTasks().get(1).isDone());
+    }
+
+    @Test
+    public void parse_onCommand_carriesTheWholeRangeIntoTheCommand(@TempDir Path directory) {
+        TaskList tasks = new TaskList(List.of(
+                new Deadline("submit ip", "2026-09-01"),
+                new Deadline("submit tp", "2026-09-09")));
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        Ui ui = new Ui(new ByteArrayInputStream(new byte[0]),
+                new PrintStream(output, true, StandardCharsets.UTF_8));
+
+        Parser.parse("on 2026-09-01 to 2026-09-09")
+                .execute(tasks, ui, new Storage(directory.resolve("tasks.txt")));
+
+        String printed = output.toString(StandardCharsets.UTF_8);
+        assertTrue(printed.contains("submit ip"));
+        assertTrue(printed.contains("submit tp"));
     }
 }

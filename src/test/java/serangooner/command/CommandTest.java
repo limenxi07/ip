@@ -7,8 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -292,5 +294,29 @@ public class CommandTest {
         new ExitCommand().execute(tasks, ui(), storage);
 
         assertTrue(storage.load().tasks().isEmpty());
+    }
+
+    @Test
+    public void execute_addCommandWhenSavingFails_exceptionThrownAndTheTaskStaysInMemory(
+            @TempDir Path directory) throws IOException {
+        // A directory sitting where the save file should be cannot be written.
+        Path file = directory.resolve("tasks.txt");
+        Files.createDirectory(file);
+        TaskList tasks = new TaskList();
+
+        assertThrows(SerangoonerException.class, () -> new AddCommand(new Todo("read book"))
+                .execute(tasks, ui(), new Storage(file)));
+
+        assertEquals(1, tasks.size());
+    }
+
+    @Test
+    public void execute_deleteCommandOutOfRange_saysNothingToTheUser(@TempDir Path directory) {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+
+        assertThrows(SerangoonerException.class,
+                () -> new DeleteCommand(2).execute(tasks, ui(), storageIn(directory)));
+
+        assertTrue(printed().isEmpty());
     }
 }

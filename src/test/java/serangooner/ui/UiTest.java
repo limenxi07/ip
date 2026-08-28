@@ -257,4 +257,27 @@ public class UiTest {
         uiReading("").showTaskAdded(new Event("demo", "2026-09-05", "2026-09-06"), 1);
         assertTrue(printedLines().get(0).startsWith("added event: "));
     }
+
+    @Test
+    public void showTasksInRange_filteredListing_keepsTheNumbersFromTheFullList() {
+        // A number read off a filtered listing has to stay usable with mark and
+        // delete, so the listing must not renumber from one.
+        TaskList tasks = new TaskList(List.of(new Todo("read book"),
+                new Deadline("submit ip", "2026-09-01"),
+                new Deadline("submit tp", "2026-09-02")));
+        LocalDate start = LocalDate.of(2026, 9, 1);
+        LocalDate end = LocalDate.of(2026, 9, 2);
+
+        uiReading("").showTasksInRange(tasks.occurringOn(start, end), start, end);
+
+        List<String> lines = printedLines();
+        assertEquals(" 2. [D][ ] submit ip (by: 01 Sep 2026)", lines.get(1));
+        assertEquals(" 3. [D][ ] submit tp (by: 02 Sep 2026)", lines.get(2));
+    }
+
+    @Test
+    public void showTaskAdded_lastTaskInTheList_reportsTheCountItWasGiven() {
+        uiReading("").showTaskAdded(new Todo("read book"), 1);
+        assertEquals("you now have 1 pending task(s) :c", printedLines().get(1));
+    }
 }
