@@ -158,6 +158,20 @@ public double computeLocation(double x, double y, int zone)
 - Static-import assertions; use `assertThrows` for exception cases
 - Header comments not required in test code
 
+**Coverage target**
+
+- Test roughly the **top 50% of methods by value** in each class — the
+  complex, core, or business-critical ones. Judge a method by what breaking
+  it would cost, not by line count.
+- Skip the other half deliberately: getters, setters, faithful `@Override`s,
+  and one-line delegation earn no test. Padding the count to hit a number is
+  worse than not testing.
+- **Every code change updates the tests in the same commit.** New method
+  in the valuable half — write its tests. Changed behaviour — update the
+  tests that pin it. Deleted method — delete its tests. A commit that moves
+  logic without touching a test is incomplete unless nothing valuable moved.
+- `./gradlew test` must be green before the change is done.
+
 ## 5. Tag and push each increment
 
 Reference: https://git-mastery.org/lessons/tag/#/cs2103
@@ -190,6 +204,8 @@ me when the overall scope changes so I can update the README.
 - [ ] No wildcard imports; braces on every loop/conditional
 - [ ] Javadoc on every new public class and method, first sentence a verb
 - [ ] `./gradlew build` passes on Java 25 (compiles and tests green)
+- [ ] Tests cover the valuable ~50% of methods, and every changed
+      method's tests were updated alongside it
 - [ ] Completing commit is tagged with the exact increment ID
 - [ ] Commit and tag both pushed to the forked repo
 - [ ] AI usage citation still accurate
