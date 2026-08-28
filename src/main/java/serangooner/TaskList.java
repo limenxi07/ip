@@ -20,7 +20,7 @@ public class TaskList {
     // Undo stack authored with the help of Codex.
     private final Deque<Runnable> undoActions = new ArrayDeque<>();
     private final Storage storage;
-    private final String loadSummary;
+    private final LoadReport loadReport;
 
     /**
      * Constructs a task list backed by the default save file.
@@ -37,38 +37,30 @@ public class TaskList {
      */
     public TaskList(Storage storage) {
         this.storage = storage;
-        this.loadSummary = loadFrom(storage);
+        this.loadReport = loadFrom(storage);
     }
 
-    public String getLoadSummary() {
-        return loadSummary;
+    public LoadReport getLoadReport() {
+        return loadReport;
     }
 
     /**
-     * Returns a one line report of what was read from the given storage,
-     * after copying the tasks it held into this list.
+     * Returns what came of reading the given storage, after copying the tasks
+     * it held into this list.
      *
      * @param storage Storage to read from.
-     * @return Report to show the user, or an empty string when there is
-     *         nothing worth saying.
+     * @return Counts of what was read, or the reason it could not be read.
      */
-    private String loadFrom(Storage storage) {
+    private LoadReport loadFrom(Storage storage) {
         Storage.LoadResult result;
         try {
             result = storage.load();
         } catch (SerangoonerException exception) {
-            return exception.getMessage();
+            return new LoadReport(0, 0, exception.getMessage());
         }
 
         tasks.addAll(result.tasks());
-        if (result.tasks().isEmpty() && result.skippedLineCount() == 0) {
-            return "";
-        }
-        String summary = "loaded " + result.tasks().size() + " task(s) from your last visit";
-        if (result.skippedLineCount() > 0) {
-            summary += "; skipped " + result.skippedLineCount() + " unreadable line(s)";
-        }
-        return summary;
+        return new LoadReport(result.tasks().size(), result.skippedLineCount(), "");
     }
 
     // Methods that parse a raw user command.
@@ -347,5 +339,16 @@ public class TaskList {
     public String toString() {
         return listTasks("your list", "your list is empty T-T add something with 'todo ...'",
                 task -> true);
+    }
+
+    /**
+     * Holds what came of reading the save file when the list was constructed.
+     *
+     * @param taskCount Number of tasks that were read.
+     * @param skippedLineCount Number of lines that could not be understood.
+     * @param errorMessage Reason the file could not be read, or an empty
+     *         string when it was read.
+     */
+    public record LoadReport(int taskCount, int skippedLineCount, String errorMessage) {
     }
 }
