@@ -5,9 +5,16 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.time.LocalDate;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import serangooner.command.AddCommand;
 import serangooner.command.Command;
@@ -20,7 +27,11 @@ import serangooner.command.MarkCommand;
 import serangooner.command.OnCommand;
 import serangooner.command.UndoCommand;
 import serangooner.command.UnmarkCommand;
+import serangooner.storage.Storage;
 import serangooner.task.DateRange;
+import serangooner.task.TaskList;
+import serangooner.task.Todo;
+import serangooner.ui.Ui;
 
 public class ParserTest {
     @Test
@@ -202,5 +213,99 @@ public class ParserTest {
     public void parseDateRange_endBeforeStart_exceptionThrown() {
         assertThrows(SerangoonerException.class,
                 () -> Parser.parseDateRange("on 2026-09-05 to 2026-09-01"));
+    }
+
+
+    @Test
+    public void parseCommandType_keywordInAnyOtherCase_exceptionThrown() {
+        // Keywords are matched exactly, so the shouted form is not a command.
+        assertThrows(SerangoonerException.class, () -> Parser.parseCommandType("LIST"));
+        assertThrows(SerangoonerException.class, () -> Parser.parseCommandType("Todo read book"));
+    }
+
+    @Test
+    public void parseCommandType_wordMerelyStartingWithAKeyword_exceptionThrown() {
+        assertThrows(SerangoonerException.class, () -> Parser.parseCommandType("listing"));
+        assertThrows(SerangoonerException.class, () -> Parser.parseCommandType("byebye"));
+    }
+
+    @Test
+    public void parseCommandType_surroundingWhitespace_ignoresIt() {
+        assertEquals(CommandType.LIST, Parser.parseCommandType("   list   "));
+    }
+
+    @Test
+    public void parseCommandType_whitespaceOnly_exceptionThrown() {
+        assertThrows(SerangoonerException.class, () -> Parser.parseCommandType("   "));
+    }
+
+    @Test
+    public void parseTodo_descriptionWithInnerSpaces_keepsThemAsTyped() {
+        assertEquals("[T][ ] read  two  books", Parser.parseTodo("todo read  two  books").toString());
+    }
+
+    @Test
+    public void parseDeadline_descriptionContainingTheSeparator_splitsAtTheFirstOne() {
+        // "pay by phone by <date>" splits at the first " by ", leaving the rest
+        // as the date, which then fails to parse. Pinned as known behaviour.
+        assertThrows(SerangoonerException.class,
+                () -> Parser.parseDeadline("deadline pay by phone by 2026-09-01"));
+    }
+
+    @Test
+    public void parseDeadline_emptyDescription_exceptionThrown() {
+        assertThrows(SerangoonerException.class,
+                () -> Parser.parseDeadline("deadline  by 2026-09-01"));
+    }
+
+    @Test
+    public void parseEvent_endSeparatorBeforeStartSeparator_exceptionThrown() {
+        assertThrows(SerangoonerException.class,
+                () -> Parser.parseEvent("event demo to 2026-09-04 from 2026-09-03"));
+    }
+
+    @Test
+    public void parseEvent_sameStartAndEnd_returnsEvent() {
+        assertEquals("[E][ ] demo (from: 03 Sep 2026 to: 03 Sep 2026)",
+                Parser.parseEvent("event demo from 2026-09-03 to 2026-09-03").toString());
+    }
+
+    @Test
+    public void parseTaskNumber_zeroOrNegative_returnsItForTheListToRefuse() {
+        assertEquals(0, Parser.parseTaskNumber("mark 0", CommandType.MARK));
+        assertEquals(-1, Parser.parseTaskNumber("delete -1", CommandType.DELETE));
+    }
+
+    @Test
+    public void parseTaskNumber_numberTooLargeForAnInt_exceptionThrown() {
+        assertThrows(SerangoonerException.class,
+                () -> Parser.parseTaskNumber("mark 99999999999", CommandType.MARK));
+    }
+
+    @Test
+    public void parseDateRange_sameDateAtBothEnds_coversThatDayAlone() {
+        DateRange range = Parser.parseDateRange("on 2026-09-01 to 2026-09-01");
+        assertEquals(LocalDate.of(2026, 9, 1), range.start());
+        assertEquals(LocalDate.of(2026, 9, 1), range.end());
+    }
+
+    @Test
+    public void parse_surroundingWhitespace_stillFindsTheCommand() {
+        assertTrue(Parser.parse("   list   ") instanceof ListCommand);
+        assertTrue(Parser.parse("  bye ") instanceof ExitCommand);
+    }
+
+    @Test
+    public void parse_commandTakingANumber_carriesThatNumberIntoTheCommand(
+            @TempDir Path directory) {
+        TaskList tasks = new TaskList(List.of(new Todo("read book"), new Todo("write essay")));
+        Ui ui = new Ui(new ByteArrayInputStream(new byte[0]),
+                new PrintStream(new ByteArrayOutputStream(), true, StandardCharsets.UTF_8));
+        Storage storage = new Storage(directory.resolve("tasks.txt"));
+
+        Parser.parse("delete 2").execute(tasks, ui, storage);
+
+        assertEquals(1, tasks.size());
+        assertEquals("[T][ ] read book", tasks.getTasks().get(0).toString());
     }
 }
