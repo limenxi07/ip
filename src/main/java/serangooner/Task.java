@@ -1,5 +1,8 @@
 package serangooner;
 
+import java.util.Optional;
+import java.util.function.Function;
+
 /**
  * Represents a single task item tracked by Serangooner.
  */
@@ -44,6 +47,38 @@ public class Task {
 
     public String getDescription() {
         return description;
+    }
+
+    /**
+     * Returns the task encoded by the given fields of a saved line.
+     * A usable line has exactly the expected number of fields, none blank,
+     * and a recognized completion flag.
+     *
+     * @param fields Fields that one line of the save file was split into.
+     * @param fieldCount Number of fields a line of this task type must have.
+     * @param factory Builds the task once the line is known to be usable.
+     * @return Task the line describes, or nothing if it cannot be read.
+     */
+    protected static Optional<Task> readSaveLine(String[] fields, int fieldCount,
+            Function<String[], Task> factory) {
+        if (fields.length != fieldCount) {
+            return Optional.empty();
+        }
+        for (String field : fields) {
+            if (field.isBlank()) {
+                return Optional.empty();
+            }
+        }
+        boolean isDone = SAVE_DONE.equals(fields[1]);
+        if (!isDone && !SAVE_NOT_DONE.equals(fields[1])) {
+            return Optional.empty();
+        }
+
+        Task task = factory.apply(fields);
+        if (isDone) {
+            task.markDone();
+        }
+        return Optional.of(task);
     }
 
     /**

@@ -1,11 +1,14 @@
 package serangooner;
 
+import java.util.Optional;
+
 /**
  * Represents a task that must be completed by a given date or time.
  */
 public class Deadline extends Task {
     /** Code identifying a deadline in the save file. */
     public static final String SAVE_CODE = "D";
+    private static final int SAVE_FIELDS = 4;
 
     private final String deadline;
 
@@ -49,6 +52,16 @@ public class Deadline extends Task {
             throw new SerangoonerException("INVALID. pls use format: deadline <description> by <date>");
         }
         return new String[]{command.substring(9, byIndex), command.substring(byIndex + 4)};
+    }
+
+    /**
+     * Returns the deadline encoded by the given fields of a saved line.
+     *
+     * @param fields Fields that one line of the save file was split into.
+     * @return Deadline the line describes, or nothing if it cannot be read.
+     */
+    static Optional<Task> fromSaveFields(String[] fields) {
+        return readSaveLine(fields, SAVE_FIELDS, f -> new Deadline(f[2], f[3]));
     }
 
     @Override

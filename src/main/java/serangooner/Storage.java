@@ -4,22 +4,19 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
  * Reads the task list from the hard disk and writes it back again.
  * The save file holds one task per line, in the format produced by
- * {@link Task#toSaveFormat()}. A line that cannot be understood is skipped
- * rather than aborting the whole load, so one damaged line never costs the
- * user the rest of the list.
+ * {@link Task#toSaveFormat()} and read back by each task type's own
+ * factory. A line that cannot be understood is skipped rather than
+ * aborting the whole load, so one damaged line never costs the user the
+ * rest of the list.
  */
 public class Storage {
-    /** Number of fields in a saved todo, the smallest kind of line. */
-    private static final int TODO_FIELDS = 3;
-    private static final int DEADLINE_FIELDS = 4;
-    private static final int EVENT_FIELDS = 5;
     private static final Path DEFAULT_FILE = Path.of("data", "serangooner.txt");
 
     private final Path file;
@@ -67,9 +64,10 @@ public class Storage {
             if (line.isBlank()) {
                 continue;
             }
-            try {
-                tasks.add(parseTask(line));
-            } catch (SerangoonerException exception) {
+            Optional<Task> task = parseTask(line);
+            if (task.isPresent()) {
+                tasks.add(task.get());
+            } else {
                 skippedLineCount++;
             }
         }
@@ -98,75 +96,20 @@ public class Storage {
 
     /**
      * Returns the task encoded by the given line of the save file.
+     * The type code decides which task type is asked to read the line, and
+     * that type alone decides whether the remaining fields make sense.
      *
      * @param line Single non-blank line read from the save file.
-     * @return Task that the line describes.
-     * @throws SerangoonerException If the line is not a task that can be understood.
+     * @return Task the line describes, or nothing if it cannot be read.
      */
-    private static Task parseTask(String line) {
+    private static Optional<Task> parseTask(String line) {
         String[] fields = line.split(Pattern.quote(Task.SAVE_DELIMITER));
-        if (fields.length < TODO_FIELDS) {
-            throw corruptedLine();
-        }
-
-        Task task = switch (fields[0]) {
-            case Todo.SAVE_CODE -> new Todo(readDescription(fields, TODO_FIELDS));
-            case Deadline.SAVE_CODE -> new Deadline(readDescription(fields, DEADLINE_FIELDS),
-                    readTrailingField(fields, 1));
-            case Event.SAVE_CODE -> new Event(readDescription(fields, EVENT_FIELDS),
-                    readTrailingField(fields, 2), readTrailingField(fields, 1));
-            default -> throw corruptedLine();
+        return switch (fields[0]) {
+            case Todo.SAVE_CODE -> Todo.fromSaveFields(fields);
+            case Deadline.SAVE_CODE -> Deadline.fromSaveFields(fields);
+            case Event.SAVE_CODE -> Event.fromSaveFields(fields);
+            default -> Optional.empty();
         };
-
-        if (fields[1].equals(Task.SAVE_DONE)) {
-            task.markDone();
-        } else if (!fields[1].equals(Task.SAVE_NOT_DONE)) {
-            throw corruptedLine();
-        }
-        return task;
-    }
-
-    /**
-     * Returns the description spanning the fields between the completion flag
-     * and the trailing date fields.
-     * Joining those fields back together keeps a description that itself
-     * contains the delimiter intact.
-     *
-     * @param fields Fields the line was split into.
-     * @param fieldCount Number of fields a line of this task type must have.
-     * @return Description of the task.
-     * @throws SerangoonerException If the line is too short or the description is blank.
-     */
-    private static String readDescription(String[] fields, int fieldCount) {
-        if (fields.length < fieldCount) {
-            throw corruptedLine();
-        }
-        String description = String.join(Task.SAVE_DELIMITER,
-                Arrays.copyOfRange(fields, 2, fields.length - (fieldCount - TODO_FIELDS)));
-        if (description.isBlank()) {
-            throw corruptedLine();
-        }
-        return description;
-    }
-
-    /**
-     * Returns one of the date fields at the end of the line.
-     *
-     * @param fields Fields the line was split into.
-     * @param positionFromEnd Position of the wanted field, counting back from one at the end.
-     * @return Contents of that field.
-     * @throws SerangoonerException If the field is blank.
-     */
-    private static String readTrailingField(String[] fields, int positionFromEnd) {
-        String field = fields[fields.length - positionFromEnd];
-        if (field.isBlank()) {
-            throw corruptedLine();
-        }
-        return field;
-    }
-
-    private static SerangoonerException corruptedLine() {
-        return new SerangoonerException("corrupted line in the save file");
     }
 
     /**
