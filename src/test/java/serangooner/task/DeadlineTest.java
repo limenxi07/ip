@@ -97,4 +97,21 @@ public class DeadlineTest {
     public void fromSaveFields_missingDateField_returnsNothing() {
         assertTrue(Deadline.fromSaveFields(new String[] {"D", "0", "submit ip"}).isEmpty());
     }
+
+    @Test
+    public void getTypeName_always_namesTheKindForMessages() {
+        assertEquals("deadline", new Deadline("submit ip", "2026-09-01").getTypeName());
+    }
+
+    @Test
+    public void isWithin_singleDayRangeOnTheDueDate_returnsTrue() {
+        Task deadline = new Deadline("submit ip", "2026-09-03");
+        assertTrue(deadline.isWithin(LocalDate.of(2026, 9, 3), LocalDate.of(2026, 9, 3)));
+    }
+
+    @Test
+    public void fromSaveFields_blankDescription_returnsNothing() {
+        assertTrue(Deadline.fromSaveFields(
+                new String[] {"D", "0", "  ", "2026-09-01"}).isEmpty());
+    }
 }

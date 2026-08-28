@@ -105,4 +105,22 @@ public class EventTest {
         assertTrue(Event.fromSaveFields(
                 new String[] {"E", "0", "demo", "2026-09-05"}).isEmpty());
     }
+
+    @Test
+    public void getTypeName_always_namesTheKindForMessages() {
+        assertEquals("event", new Event("demo", "2026-09-05", "2026-09-06").getTypeName());
+    }
+
+    @Test
+    public void toSaveFormat_done_writesTheDoneFlag() {
+        Task event = new Event("demo", "2026-09-05 1400", "2026-09-05 1600");
+        event.markDone();
+        assertEquals("E | 1 | demo | 2026-09-05 1400 | 2026-09-05 1600", event.toSaveFormat());
+    }
+
+    @Test
+    public void isWithin_singleDayEventOnTheOnlyDayOfTheRange_returnsTrue() {
+        Task event = new Event("demo", "2026-09-05", "2026-09-05");
+        assertTrue(event.isWithin(LocalDate.of(2026, 9, 5), LocalDate.of(2026, 9, 5)));
+    }
 }

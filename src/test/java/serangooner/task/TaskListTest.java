@@ -225,4 +225,48 @@ public class TaskListTest {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
         assertThrows(SerangoonerException.class, () -> tasks.unmark(2));
     }
+
+    @Test
+    public void size_afterAddAndDelete_tracksTheCount() {
+        TaskList tasks = new TaskList();
+        assertEquals(0, tasks.size());
+        tasks.add(new Todo("read book"));
+        tasks.add(new Todo("write essay"));
+        assertEquals(2, tasks.size());
+        tasks.delete(1);
+        assertEquals(1, tasks.size());
+    }
+
+    @Test
+    public void entries_emptyList_returnsNothing() {
+        assertEquals(List.of(), new TaskList().entries());
+    }
+
+    @Test
+    public void entries_always_pairsEachNumberWithItsOwnTask() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book"), new Todo("write essay")));
+        List<TaskList.Entry> entries = tasks.entries();
+        assertEquals(2, entries.get(1).number());
+        assertSame(tasks.getTasks().get(1), entries.get(1).task());
+    }
+
+    @Test
+    public void mark_validNumber_returnsTheTaskItMarked() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+        assertSame(tasks.getTasks().get(0), tasks.mark(1));
+    }
+
+    @Test
+    public void unmark_validNumber_returnsTheTaskItUnmarked() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+        tasks.mark(1);
+        assertSame(tasks.getTasks().get(0), tasks.unmark(1));
+    }
+
+    @Test
+    public void occurringOn_taskCarryingNoDate_leavesItOut() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+        assertEquals(List.of(),
+                tasks.occurringOn(LocalDate.MIN, LocalDate.MAX));
+    }
 }

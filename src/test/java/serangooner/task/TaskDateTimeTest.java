@@ -117,4 +117,25 @@ public class TaskDateTimeTest {
     public void format_date_writesItTheWayTheUserSeesIt() {
         assertEquals("01 Sep 2026", TaskDateTime.format(LocalDate.of(2026, 9, 1)));
     }
+
+    @Test
+    public void toLocalDate_bareDate_returnsThatDay() {
+        assertEquals(LocalDate.of(2026, 9, 1), TaskDateTime.parse("2026-09-01").toLocalDate());
+    }
+
+    @Test
+    public void toLocalDate_dateWithTime_dropsTheTimeOfDay() {
+        assertEquals(LocalDate.of(2026, 9, 1),
+                TaskDateTime.parse("2026-09-01 1800").toLocalDate());
+    }
+
+    @Test
+    public void parseDate_bareDate_returnsThatDay() {
+        assertEquals(LocalDate.of(2026, 9, 1), TaskDateTime.parseDate("2026-09-01"));
+    }
+
+    @Test
+    public void parseDate_unreadableText_exceptionThrown() {
+        assertThrows(SerangoonerException.class, () -> TaskDateTime.parseDate("whenever"));
+    }
 }
