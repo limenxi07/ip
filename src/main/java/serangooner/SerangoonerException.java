@@ -4,6 +4,8 @@ package serangooner;
  * Represents invalid input entered as a Serangooner command.
  */
 public class SerangoonerException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
+
     /**
      * Constructs an exception carrying the message shown to the user.
      *

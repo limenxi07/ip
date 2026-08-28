@@ -1,0 +1,23 @@
+package serangooner;
+
+/**
+ * Deletes a task from the list.
+ */
+public class DeleteCommand extends Command {
+    private final int taskNumber;
+
+    /**
+     * Constructs a command that deletes the task at the given position.
+     *
+     * @param taskNumber Position of the task in the list, counting from one.
+     */
+    public DeleteCommand(int taskNumber) {
+        this.taskNumber = taskNumber;
+    }
+
+    @Override
+    public void execute(TaskList tasks, Ui ui, Storage storage) {
+        ui.showTaskDeleted(tasks.delete(taskNumber));
+        storage.save(tasks.getTasks());
+    }
+}

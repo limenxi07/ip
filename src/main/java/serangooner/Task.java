@@ -6,8 +6,11 @@ import java.util.function.Function;
 
 /**
  * Represents a single task item tracked by Serangooner.
+ * A task on its own is not a complete thing to store: it is a task of some
+ * kind, and its kind decides how it is named, whether it falls on a date and
+ * what code identifies it in the save file. Only those kinds can be built.
  */
-public class Task {
+public abstract class Task {
     /** Separator written between the fields of a saved task. */
     public static final String SAVE_DELIMITER = " | ";
     /** Field value marking a saved task as completed. */
@@ -23,7 +26,7 @@ public class Task {
      *
      * @param description Text describing what the task involves.
      */
-    public Task(String description) {
+    protected Task(String description) {
         this.description = description;
         this.isDone = false;
     }
@@ -49,6 +52,11 @@ public class Task {
     public String getDescription() {
         return description;
     }
+
+    /**
+     * Returns the name this kind of task goes by in messages to the user.
+     */
+    public abstract String getTypeName();
 
     /**
      * Returns whether this task falls on or between the given dates.
