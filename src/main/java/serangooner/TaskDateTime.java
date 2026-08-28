@@ -83,6 +83,17 @@ public class TaskDateTime {
     }
 
     /**
+     * Returns whether this point in time comes before the given one.
+     * A value carrying no time of day counts as the start of its day.
+     *
+     * @param other Point in time to compare against.
+     * @return True if this value is the earlier of the two.
+     */
+    public boolean isBefore(TaskDateTime other) {
+        return dateTime.isBefore(other.dateTime);
+    }
+
+    /**
      * Returns the calendar date this point in time falls on.
      */
     public LocalDate toLocalDate() {

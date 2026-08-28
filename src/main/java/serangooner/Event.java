@@ -20,20 +20,25 @@ public class Event extends Task {
      * @param description Text describing what the event involves.
      * @param from Date, and optionally time, at which the event starts.
      * @param to Date, and optionally time, at which the event ends.
-     * @throws SerangoonerException If either date is not in an accepted format.
+     * @throws SerangoonerException If either date is not in an accepted format,
+     *         or the event ends before it starts.
      */
     public Event(String description, String from, String to) {
         super(description);
         this.from = TaskDateTime.parse(from);
         this.to = TaskDateTime.parse(to);
+        if (this.to.isBefore(this.from)) {
+            throw new SerangoonerException("INVALID. ur event ends before it starts o.O");
+        }
     }
 
     /**
      * Constructs an event by parsing a full user command.
      *
      * @param command Command in the form "event &lt;description&gt; from &lt;date&gt; to &lt;date&gt;".
-     * @throws SerangoonerException If the command does not follow that form, or
-     *         either of its dates is not in an accepted format.
+     * @throws SerangoonerException If the command does not follow that form, if
+     *         either of its dates is not in an accepted format, or if the event
+     *         ends before it starts.
      */
     public Event(String command) {
         this(parse(command));
