@@ -154,4 +154,75 @@ public class TaskListTest {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
         assertTrue(tasks.occurringOn(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 1)).isEmpty());
     }
+
+    @Test
+    public void undo_afterUnmark_leavesTaskDoneAgain() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+        tasks.mark(1);
+        tasks.unmark(1);
+
+        assertTrue(tasks.undo());
+
+        assertTrue(tasks.getTasks().get(0).isDone());
+    }
+
+    @Test
+    public void undo_severalEdits_reversesThemMostRecentFirst() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("read book"));
+        tasks.add(new Todo("write essay"));
+        tasks.delete(1);
+
+        assertTrue(tasks.undo());
+        assertEquals(2, tasks.size());
+        assertEquals("[T][ ] read book", tasks.getTasks().get(0).toString());
+
+        assertTrue(tasks.undo());
+        assertEquals(1, tasks.size());
+        assertEquals("[T][ ] read book", tasks.getTasks().get(0).toString());
+    }
+
+    @Test
+    public void undo_everyEditUndone_returnsFalseOnceMore() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("read book"));
+
+        assertTrue(tasks.undo());
+        assertFalse(tasks.undo());
+    }
+
+    @Test
+    public void occurringOn_rangeEndingOnTheTaskDate_includesIt() {
+        TaskList tasks = new TaskList(List.of(new Deadline("submit ip", "2026-09-05")));
+        assertEquals(1, tasks.occurringOn(LocalDate.of(2026, 9, 1),
+                LocalDate.of(2026, 9, 5)).size());
+    }
+
+    @Test
+    public void occurringOn_rangeStartingOnTheTaskDate_includesIt() {
+        TaskList tasks = new TaskList(List.of(new Deadline("submit ip", "2026-09-01")));
+        assertEquals(1, tasks.occurringOn(LocalDate.of(2026, 9, 1),
+                LocalDate.of(2026, 9, 5)).size());
+    }
+
+    @Test
+    public void mark_alreadyDoneTask_leavesItDone() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+        tasks.mark(1);
+        tasks.mark(1);
+        assertTrue(tasks.getTasks().get(0).isDone());
+    }
+
+    @Test
+    public void delete_numberOutOfRange_exceptionThrown() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+        assertThrows(SerangoonerException.class, () -> tasks.delete(2));
+        assertThrows(SerangoonerException.class, () -> tasks.delete(0));
+    }
+
+    @Test
+    public void unmark_numberOutOfRange_exceptionThrown() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+        assertThrows(SerangoonerException.class, () -> tasks.unmark(2));
+    }
 }
