@@ -8,9 +8,9 @@ import java.util.Arrays;
  * Makes sense of the lines that the user types.
  * This class is the only one that knows how a command is written, so the
  * wording of a command can change here without any task or list having to
- * change with it. Each method turns one line of input into the values that
- * the rest of the program works in: a command type, a task, a task number
- * or a range of dates.
+ * change with it. One line of input becomes one {@link Command}, already
+ * holding the values the line carried: a task, a task number or a range of
+ * dates, with nothing left for the command to work out later.
  * Surrounding space is the user's to leave in, so every method here trims
  * the line before making sense of it.
  * Reading the save file is a separate concern and is left to {@link Storage}.
@@ -22,6 +22,33 @@ public class Parser {
 
     private Parser() {
         // A parser holds nothing of its own, so there is never a reason to build one.
+    }
+
+    /**
+     * Returns the command that the given line of input asks for, ready to run.
+     * Everything the command needs is worked out here, so that carrying it
+     * out later cannot fail for want of understanding what was typed.
+     *
+     * @param fullCommand Line of input entered by the user.
+     * @return Command the input asks for.
+     * @throws SerangoonerException If the input names no command, or does not
+     *         give that command what it needs.
+     */
+    public static Command parse(String fullCommand) {
+        CommandType commandType = parseCommandType(fullCommand);
+        return switch (commandType) {
+            case TODO -> new AddCommand(parseTodo(fullCommand));
+            case DEADLINE -> new AddCommand(parseDeadline(fullCommand));
+            case EVENT -> new AddCommand(parseEvent(fullCommand));
+            case MARK -> new MarkCommand(parseTaskNumber(fullCommand, commandType));
+            case UNMARK -> new UnmarkCommand(parseTaskNumber(fullCommand, commandType));
+            case DELETE -> new DeleteCommand(parseTaskNumber(fullCommand, commandType));
+            case ON -> new OnCommand(parseDateRange(fullCommand));
+            case LIST -> new ListCommand();
+            case UNDO -> new UndoCommand();
+            case HELP -> new HelpCommand();
+            case BYE -> new ExitCommand();
+        };
     }
 
     /**

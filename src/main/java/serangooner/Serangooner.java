@@ -6,9 +6,9 @@ import java.nio.file.Path;
  * Runs the Serangooner chatbot as a command line program.
  * This class is the one place that holds the user interface, the task list
  * and the save file together, so it alone decides when a change to the list
- * is written back to disk. A command read from the user is handed to the
- * {@link Parser}, which says what was meant, and the result of acting on it
- * is handed back to the {@link Ui}.
+ * is written back to disk. A line read from the user is handed to the
+ * {@link Parser}, which returns the {@link Command} it asks for, and running
+ * that command is all this class has left to do.
  */
 public class Serangooner {
     private static final String DEFAULT_FILE_PATH = "data/serangooner.txt";
@@ -34,63 +34,27 @@ public class Serangooner {
 
     /**
      * Greets the user, then runs each command entered until the user says bye.
-     * A command that can change the list is followed by a write to the save
-     * file, so what is on disk keeps matching what the user sees.
+     * Every line is turned into a command that knows how to carry itself out,
+     * so this loop never has to ask what was typed: it reads, runs, and draws
+     * a divider, whether the command succeeded or not.
      */
     public void run() {
         ui.showWelcome();
         ui.showLoadReport(loadResult);
 
-        while (ui.hasNextCommand()) {
-            String command = ui.readCommand();
+        boolean isExit = false;
+        while (!isExit && ui.hasNextCommand()) {
             try {
-                CommandType commandType = Parser.parseCommandType(command);
-                switch (commandType) {
-                    case BYE -> {
-                        ui.showFarewell();
-                        return;
-                    }
-                    case HELP -> ui.showHelp(CommandType.values());
-                    case LIST -> ui.showTasks(tasks.entries());
-                    case ON -> showOccurringOn(Parser.parseDateRange(command));
-                    case UNDO -> ui.showUndo(tasks.undo());
-                    case MARK -> ui.showTaskMarked(tasks.mark(Parser.parseTaskNumber(command, commandType)));
-                    case UNMARK -> ui.showTaskUnmarked(
-                            tasks.unmark(Parser.parseTaskNumber(command, commandType)));
-                    case DELETE -> ui.showTaskDeleted(
-                            tasks.delete(Parser.parseTaskNumber(command, commandType)));
-                    case TODO -> showAdded(tasks.add(Parser.parseTodo(command)));
-                    case DEADLINE -> showAdded(tasks.add(Parser.parseDeadline(command)));
-                    case EVENT -> showAdded(tasks.add(Parser.parseEvent(command)));
-                }
-                if (commandType.isMutating()) {
-                    storage.save(tasks.getTasks());
-                }
+                String fullCommand = ui.readCommand();
+                Command command = Parser.parse(fullCommand);
+                command.execute(tasks, ui, storage);
+                isExit = command.isExit();
             } catch (SerangoonerException exception) {
                 ui.showError(exception.getMessage());
+            } finally {
+                ui.showDivider();
             }
-            ui.showDivider();
         }
-    }
-
-    /**
-     * Shows that the given task was added, along with the size the list has
-     * reached now that it is in.
-     *
-     * @param task Task that was just added.
-     */
-    private void showAdded(Task task) {
-        ui.showTaskAdded(task, tasks.size());
-    }
-
-    /**
-     * Shows the tasks falling within the given span of dates.
-     *
-     * @param range Span of dates to report on.
-     */
-    private void showOccurringOn(Parser.DateRange range) {
-        ui.showTasksInRange(tasks.occurringOn(range.start(), range.end()),
-                range.start(), range.end());
     }
 
     /**

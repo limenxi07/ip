@@ -43,10 +43,9 @@ public class UiTest {
     }
 
     @Test
-    public void showFarewell_always_saysByeThenDivider() {
+    public void showFarewell_always_saysByeAloneAndLeavesTheDividerToTheLoop() {
         uiReading("").showFarewell();
-        assertEquals("bye~" + System.lineSeparator() + DIVIDER + System.lineSeparator(),
-                output.toString(StandardCharsets.UTF_8));
+        assertEquals("bye~" + System.lineSeparator(), output.toString(StandardCharsets.UTF_8));
     }
 
     @Test

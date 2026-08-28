@@ -1,13 +1,45 @@
 package serangooner;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
 
 public class ParserTest {
+    @Test
+    public void parse_eachKeyword_returnsTheMatchingCommand() {
+        assertTrue(Parser.parse("todo read book") instanceof AddCommand);
+        assertTrue(Parser.parse("deadline submit ip by 2026-09-01") instanceof AddCommand);
+        assertTrue(Parser.parse("event orbital from 2026-09-03 to 2026-09-04") instanceof AddCommand);
+        assertTrue(Parser.parse("mark 1") instanceof MarkCommand);
+        assertTrue(Parser.parse("unmark 1") instanceof UnmarkCommand);
+        assertTrue(Parser.parse("delete 1") instanceof DeleteCommand);
+        assertTrue(Parser.parse("on 2026-09-01") instanceof OnCommand);
+        assertTrue(Parser.parse("list") instanceof ListCommand);
+        assertTrue(Parser.parse("undo") instanceof UndoCommand);
+        assertTrue(Parser.parse("help") instanceof HelpCommand);
+        assertTrue(Parser.parse("bye") instanceof ExitCommand);
+    }
+
+    @Test
+    public void parse_onlyTheExitCommand_saysToExit() {
+        assertTrue(Parser.parse("bye").isExit());
+        assertFalse(Parser.parse("list").isExit());
+    }
+
+    @Test
+    public void parse_unusableInput_exceptionThrownBeforeAnyCommandIsBuilt() {
+        assertThrows(SerangoonerException.class, () -> Parser.parse("blah"));
+        assertThrows(SerangoonerException.class, () -> Parser.parse("todo"));
+        assertThrows(SerangoonerException.class, () -> Parser.parse("mark abc"));
+        assertThrows(SerangoonerException.class, () -> Parser.parse("deadline submit ip"));
+        assertThrows(SerangoonerException.class, () -> Parser.parse("on 2026-09-05 to 2026-09-01"));
+    }
+
     @Test
     public void parseCommandType_knownKeyword_returnsThatCommand() {
         assertEquals(CommandType.TODO, Parser.parseCommandType("todo read book"));

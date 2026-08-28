@@ -253,9 +253,10 @@ public class Ui {
 
     /**
      * Says goodbye to the user.
+     * The divider closing the exchange is left to the main loop, which draws
+     * one after every command alike.
      */
     public void showFarewell() {
         out.println("bye~");
-        out.println(DIVIDER);
     }
 }

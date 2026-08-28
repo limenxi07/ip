@@ -1,0 +1,23 @@
+package serangooner;
+
+/**
+ * Shows the tasks falling within a span of dates.
+ */
+public class OnCommand extends Command {
+    private final Parser.DateRange range;
+
+    /**
+     * Constructs a command that reports on the given span of dates.
+     *
+     * @param range Span of dates to report on.
+     */
+    public OnCommand(Parser.DateRange range) {
+        this.range = range;
+    }
+
+    @Override
+    public void execute(TaskList tasks, Ui ui, Storage storage) {
+        ui.showTasksInRange(tasks.occurringOn(range.start(), range.end()),
+                range.start(), range.end());
+    }
+}
