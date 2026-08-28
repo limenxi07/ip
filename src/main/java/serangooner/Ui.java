@@ -79,7 +79,7 @@ public class Ui {
      *
      * @param report Outcome of reading the save file.
      */
-    public void showLoadReport(TaskList.LoadReport report) {
+    public void showLoadReport(Storage.LoadResult report) {
         String summary = describe(report);
         if (summary.isEmpty()) {
             return;
@@ -95,14 +95,14 @@ public class Ui {
      * @return Report to show the user, or an empty string when there is
      *         nothing worth saying.
      */
-    private static String describe(TaskList.LoadReport report) {
+    private static String describe(Storage.LoadResult report) {
         if (!report.errorMessage().isEmpty()) {
             return report.errorMessage();
         }
-        if (report.taskCount() == 0 && report.skippedLineCount() == 0) {
+        if (report.tasks().isEmpty() && report.skippedLineCount() == 0) {
             return "";
         }
-        String summary = "loaded " + report.taskCount() + " task(s) from your last visit";
+        String summary = "loaded " + report.tasks().size() + " task(s) from your last visit";
         if (report.skippedLineCount() > 0) {
             summary += "; skipped " + report.skippedLineCount() + " unreadable line(s)";
         }

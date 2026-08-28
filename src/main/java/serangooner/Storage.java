@@ -17,16 +17,7 @@ import java.util.regex.Pattern;
  * rest of the list.
  */
 public class Storage {
-    private static final Path DEFAULT_FILE = Path.of("data", "serangooner.txt");
-
     private final Path file;
-
-    /**
-     * Constructs storage backed by the default save file, ./data/serangooner.txt.
-     */
-    public Storage() {
-        this(DEFAULT_FILE);
-    }
 
     /**
      * Constructs storage backed by the given file.
@@ -40,22 +31,23 @@ public class Storage {
     /**
      * Returns the tasks held in the save file.
      * A missing file is treated as an empty list, since that is simply the
-     * first run of the program.
+     * first run of the program. A file that cannot be read is not fatal
+     * either, so the reason is reported in the result rather than thrown.
      *
-     * @return Tasks that were read, together with the number of lines skipped.
-     * @throws SerangoonerException If the file exists but cannot be read.
+     * @return Tasks that were read, the number of lines skipped, and the
+     *         reason the file could not be read.
      */
     public LoadResult load() {
         if (!Files.exists(file)) {
-            return new LoadResult(new ArrayList<>(), 0);
+            return new LoadResult(new ArrayList<>(), 0, "");
         }
 
         List<String> lines;
         try {
             lines = Files.readAllLines(file);
         } catch (IOException exception) {
-            throw new SerangoonerException("couldn't read " + file
-                    + ", so we're starting fresh", exception);
+            return new LoadResult(new ArrayList<>(), 0,
+                    "couldn't read " + file + ", so we're starting fresh");
         }
 
         List<Task> tasks = new ArrayList<>(lines.size());
@@ -71,7 +63,7 @@ public class Storage {
                 skippedLineCount++;
             }
         }
-        return new LoadResult(tasks, skippedLineCount);
+        return new LoadResult(tasks, skippedLineCount, "");
     }
 
     /**
@@ -117,7 +109,9 @@ public class Storage {
      *
      * @param tasks Tasks that were read successfully.
      * @param skippedLineCount Number of lines that could not be understood.
+     * @param errorMessage Reason the file could not be read, or an empty
+     *         string when it was read.
      */
-    public record LoadResult(List<Task> tasks, int skippedLineCount) {
+    public record LoadResult(List<Task> tasks, int skippedLineCount, String errorMessage) {
     }
 }

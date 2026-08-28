@@ -3,15 +3,17 @@ package serangooner;
 import java.time.LocalDate;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.Predicate;
 
 /**
  * Stores and edits the tasks entered by the user.
- * The list is read from storage when it is constructed and written back
- * after every edit, so the file on disk always matches what the user sees.
- * Every edit also pushes an action that reverses it, so the most recent edit
+ * The list lives entirely in memory and knows nothing of where its tasks
+ * came from, so writing them back to disk is left to whoever holds both
+ * this list and a {@link Storage}.
+ * Every edit pushes an action that reverses it, so the most recent edit
  * can be undone.
  */
 public class TaskList {
@@ -19,48 +21,29 @@ public class TaskList {
     private final List<Task> tasks = new ArrayList<>(MAX_TASKS);
     // Undo stack authored with the help of Codex.
     private final Deque<Runnable> undoActions = new ArrayDeque<>();
-    private final Storage storage;
-    private final LoadReport loadReport;
 
     /**
-     * Constructs a task list backed by the default save file.
+     * Constructs an empty task list.
      */
     public TaskList() {
-        this(new Storage());
+        this(List.of());
     }
 
     /**
-     * Constructs a task list backed by the given storage, reading in whatever
-     * tasks it already holds.
+     * Constructs a task list holding the given tasks.
      *
-     * @param storage Storage that the list is read from and written back to.
+     * @param tasks Tasks the list starts out with, in the order they are shown.
      */
-    public TaskList(Storage storage) {
-        this.storage = storage;
-        this.loadReport = loadFrom(storage);
-    }
-
-    public LoadReport getLoadReport() {
-        return loadReport;
+    public TaskList(List<Task> tasks) {
+        this.tasks.addAll(tasks);
     }
 
     /**
-     * Returns what came of reading the given storage, after copying the tasks
-     * it held into this list.
-     *
-     * @param storage Storage to read from.
-     * @return Counts of what was read, or the reason it could not be read.
+     * Returns the tasks in the order they are shown, as a view that cannot be
+     * edited through.
      */
-    private LoadReport loadFrom(Storage storage) {
-        Storage.LoadResult result;
-        try {
-            result = storage.load();
-        } catch (SerangoonerException exception) {
-            return new LoadReport(0, 0, exception.getMessage());
-        }
-
-        tasks.addAll(result.tasks());
-        return new LoadReport(result.tasks().size(), result.skippedLineCount(), "");
+    public List<Task> getTasks() {
+        return Collections.unmodifiableList(tasks);
     }
 
     // Methods that parse a raw user command.
@@ -80,7 +63,6 @@ public class TaskList {
         Task task = new Todo(description);
         tasks.add(task);
         undoActions.push(() -> tasks.remove(task));
-        storage.save(tasks);
         return "added todo: " + task + System.lineSeparator()
                 + "you now have " + size() + " pending task(s) :c";
     }
@@ -96,7 +78,6 @@ public class TaskList {
         Task task = new Deadline(command);
         tasks.add(task);
         undoActions.push(() -> tasks.remove(task));
-        storage.save(tasks);
         return "added deadline: " + task + System.lineSeparator()
                 + "you now have " + size() + " pending task(s) :c";
     }
@@ -112,7 +93,6 @@ public class TaskList {
         Task task = new Event(command);
         tasks.add(task);
         undoActions.push(() -> tasks.remove(task));
-        storage.save(tasks);
         return "added event: " + task + System.lineSeparator()
                 + "you now have " + size() + " pending task(s) :c";
     }
@@ -254,7 +234,6 @@ public class TaskList {
                 task.markNotDone();
             }
         });
-        storage.save(tasks);
         return task;
     }
 
@@ -275,7 +254,6 @@ public class TaskList {
                 task.markNotDone();
             }
         });
-        storage.save(tasks);
         return task;
     }
 
@@ -288,7 +266,6 @@ public class TaskList {
     public Task delete(int taskNumber) {
         Task task = tasks.remove(taskNumber - 1);
         undoActions.push(() -> tasks.add(taskNumber - 1, task));
-        storage.save(tasks);
         return task;
     }
 
@@ -302,7 +279,6 @@ public class TaskList {
             return false;
         }
         undoActions.pop().run();
-        storage.save(tasks);
         return true;
     }
 
@@ -339,16 +315,5 @@ public class TaskList {
     public String toString() {
         return listTasks("your list", "your list is empty T-T add something with 'todo ...'",
                 task -> true);
-    }
-
-    /**
-     * Holds what came of reading the save file when the list was constructed.
-     *
-     * @param taskCount Number of tasks that were read.
-     * @param skippedLineCount Number of lines that could not be understood.
-     * @param errorMessage Reason the file could not be read, or an empty
-     *         string when it was read.
-     */
-    public record LoadReport(int taskCount, int skippedLineCount, String errorMessage) {
     }
 }

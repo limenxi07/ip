@@ -22,6 +22,10 @@ public class UiTest {
                 new PrintStream(output, true, StandardCharsets.UTF_8));
     }
 
+    private static List<Task> threeTasks() {
+        return List.of(new Todo("read book"), new Todo("write essay"), new Todo("nap"));
+    }
+
     private List<String> printedLines() {
         String printed = output.toString(StandardCharsets.UTF_8);
         return printed.isEmpty() ? List.of() : List.of(printed.split(System.lineSeparator(), -1));
@@ -60,20 +64,20 @@ public class UiTest {
 
     @Test
     public void showLoadReport_nothingLoaded_printsNothing() {
-        uiReading("").showLoadReport(new TaskList.LoadReport(0, 0, ""));
+        uiReading("").showLoadReport(new Storage.LoadResult(List.of(), 0, ""));
         assertEquals("", output.toString(StandardCharsets.UTF_8));
     }
 
     @Test
     public void showLoadReport_tasksLoaded_reportsCount() {
-        uiReading("").showLoadReport(new TaskList.LoadReport(3, 0, ""));
+        uiReading("").showLoadReport(new Storage.LoadResult(threeTasks(), 0, ""));
         assertEquals("loaded 3 task(s) from your last visit" + System.lineSeparator()
                 + DIVIDER + System.lineSeparator(), output.toString(StandardCharsets.UTF_8));
     }
 
     @Test
     public void showLoadReport_linesSkipped_reportsBothCounts() {
-        uiReading("").showLoadReport(new TaskList.LoadReport(3, 2, ""));
+        uiReading("").showLoadReport(new Storage.LoadResult(threeTasks(), 2, ""));
         assertEquals("loaded 3 task(s) from your last visit; skipped 2 unreadable line(s)"
                 + System.lineSeparator() + DIVIDER + System.lineSeparator(),
                 output.toString(StandardCharsets.UTF_8));
@@ -81,7 +85,7 @@ public class UiTest {
 
     @Test
     public void showLoadReport_loadFailed_reportsReason() {
-        uiReading("").showLoadReport(new TaskList.LoadReport(0, 0, "couldn't read it"));
+        uiReading("").showLoadReport(new Storage.LoadResult(List.of(), 0, "couldn't read it"));
         assertEquals("couldn't read it" + System.lineSeparator() + DIVIDER + System.lineSeparator(),
                 output.toString(StandardCharsets.UTF_8));
     }
