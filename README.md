@@ -19,7 +19,7 @@ a AI* chatbot that helps you track stuff
 from the project root, run:
 
 ```bash
-javac -d out src/main/java/serangooner/*.java
+javac -d out $(find src/main/java -name '*.java')
 java -cp out serangooner.Serangooner
 ```
 

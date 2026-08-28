@@ -1,4 +1,4 @@
-package serangooner;
+package serangooner.task;
 
 import java.time.LocalDate;
 import java.util.ArrayDeque;
@@ -8,13 +8,15 @@ import java.util.Deque;
 import java.util.List;
 import java.util.function.Predicate;
 
+import serangooner.SerangoonerException;
+
 /**
  * Stores and edits the tasks entered by the user.
  * The list lives entirely in memory and knows nothing of where its tasks
  * came from, so writing them back to disk is left to whoever holds both
- * this list and a {@link Storage}. It says nothing to the user either: an
- * edit gives back the task it touched, and how that is worded is for the
- * {@link Ui} to decide.
+ * this list and a {@link serangooner.storage.Storage Storage}. It says
+ * nothing to the user either: an edit gives back the task it touched, and
+ * how that is worded is for the {@link serangooner.ui.Ui Ui} to decide.
  * Every edit pushes an action that reverses it, so the most recent edit
  * can be undone.
  */

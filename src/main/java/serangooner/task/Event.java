@@ -1,7 +1,9 @@
-package serangooner;
+package serangooner.task;
 
 import java.time.LocalDate;
 import java.util.Optional;
+
+import serangooner.SerangoonerException;
 
 /**
  * Represents a task that starts and ends at specified dates or times.
@@ -38,7 +40,7 @@ public class Event extends Task {
      * @param fields Fields that one line of the save file was split into.
      * @return Event the line describes, or nothing if it cannot be read.
      */
-    static Optional<Task> fromSaveFields(String[] fields) {
+    public static Optional<Task> fromSaveFields(String[] fields) {
         return readSaveLine(fields, SAVE_FIELDS, f -> new Event(f[2], f[3], f[4]));
     }
 

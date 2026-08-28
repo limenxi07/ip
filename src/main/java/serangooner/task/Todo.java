@@ -1,4 +1,4 @@
-package serangooner;
+package serangooner.task;
 
 import java.util.Optional;
 
@@ -25,7 +25,7 @@ public class Todo extends Task {
      * @param fields Fields that one line of the save file was split into.
      * @return Todo the line describes, or nothing if it cannot be read.
      */
-    static Optional<Task> fromSaveFields(String[] fields) {
+    public static Optional<Task> fromSaveFields(String[] fields) {
         return readSaveLine(fields, SAVE_FIELDS, f -> new Todo(f[2]));
     }
 

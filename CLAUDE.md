@@ -10,16 +10,36 @@ reference is silent, follow the Google Java Style Guide.
 
 ## 0. Project facts
 
-- Bot name: **Serangooner**. Sources in `src/main/java/serangooner/`, all in
-  the `serangooner` package.
+- Bot name: **Serangooner**. Source root is `src/main/java/`, and every class
+  sits under `serangooner`, split into packages:
+
+  | Package | Holds |
+  | --- | --- |
+  | `serangooner` | `Serangooner` (entry point and wiring), `Parser`, `SerangoonerException` |
+  | `serangooner.command` | `Command`, `CommandType`, and every `*Command` |
+  | `serangooner.storage` | `Storage` |
+  | `serangooner.task` | `Task`, `Todo`, `Deadline`, `Event`, `TaskList`, `TaskDateTime`, `DateRange` |
+  | `serangooner.ui` | `Ui`, `SoundPlayer` |
+
+  Dependencies run one way only:
+  `serangooner` → `command` → {`ui`, `storage`} → `task`. The sole exception is
+  `SerangoonerException`, which every package may import from the root.
+  **Do not add an import that points back up this chain.** If a class needs a
+  type from a higher layer, that is a design problem to raise with me, not to
+  import around. A Javadoc-only reference across packages uses a qualified
+  link — `{@link serangooner.ui.Ui Ui}` — so it costs no import.
 - **Java 25.** On macOS switch with `sdk use java 25.0.3.fx-zulu` before
   running or building.
 - No Gradle yet — compile and run directly (an `add-gradle-support` branch
-  exists on the remote but is not merged).
+  exists on the remote but is not merged). Because sources are now nested, a
+  plain glob misses classes; compile with
+  `javac -d out $(find src/main/java -name '*.java')`.
 - The existing code has been brought in line with these rules — every class is
   packaged, and Javadoc replaces the old `/* */` headers. Keep it that way. **Do
   not refactor working code unprompted**; if you notice a violation, mention it
   and let me decide.
+- A new class goes in the package matching its job. Adding a package is a
+  design change: propose it, don't just create it.
 
 ## 1. Working style
 
@@ -90,7 +110,8 @@ Full reference: https://se-education.org/guides/conventions/java/intermediate.ht
 - Every class in a package
 - No wildcard imports — list classes explicitly
 - Import order: static imports, then `java.*`, `javax.*`, `org.*`, `com.*`,
-  `javafx.*`; blank line between groups
+  `javafx.*`, then `serangooner.*` last; blank line between groups, each group
+  sorted alphabetically
 - Array brackets attach to type: `int[] a`, not `int a[]`
 - Initialize variables at declaration, smallest possible scope
 - No public class fields unless it's a plain data class (constants exempt)

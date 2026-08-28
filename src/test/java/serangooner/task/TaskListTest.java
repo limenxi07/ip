@@ -1,4 +1,4 @@
-package serangooner;
+package serangooner.task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -10,6 +10,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+
+import serangooner.SerangoonerException;
 
 public class TaskListTest {
     @Test

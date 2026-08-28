@@ -1,4 +1,4 @@
-package serangooner;
+package serangooner.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -12,6 +12,12 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
+import serangooner.SerangoonerException;
+import serangooner.task.Deadline;
+import serangooner.task.Event;
+import serangooner.task.Task;
+import serangooner.task.Todo;
 
 public class StorageTest {
     @Test

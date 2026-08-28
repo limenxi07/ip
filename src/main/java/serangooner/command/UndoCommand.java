@@ -1,4 +1,8 @@
-package serangooner;
+package serangooner.command;
+
+import serangooner.storage.Storage;
+import serangooner.task.TaskList;
+import serangooner.ui.Ui;
 
 /**
  * Reverses the most recent change made to the list.

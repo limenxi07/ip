@@ -1,11 +1,16 @@
-package serangooner;
+package serangooner.command;
+
+import serangooner.SerangoonerException;
+import serangooner.storage.Storage;
+import serangooner.task.TaskList;
+import serangooner.ui.Ui;
 
 /**
  * Represents one thing the user has asked Serangooner to do.
- * A command is built by the {@link Parser} once, already knowing everything
- * it needs from the line that was typed, and is then run against the task
- * list. Running it is the only step left, so the main loop never has to ask
- * what kind of command it is holding.
+ * A command is built by the {@link serangooner.Parser Parser} once, already
+ * knowing everything it needs from the line that was typed, and is then run
+ * against the task list. Running it is the only step left, so the main loop
+ * never has to ask what kind of command it is holding.
  */
 public abstract class Command {
     /**
