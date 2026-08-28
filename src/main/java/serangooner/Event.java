@@ -33,44 +33,6 @@ public class Event extends Task {
     }
 
     /**
-     * Constructs an event by parsing a full user command.
-     *
-     * @param command Command in the form "event &lt;description&gt; from &lt;date&gt; to &lt;date&gt;".
-     * @throws SerangoonerException If the command does not follow that form, if
-     *         either of its dates is not in an accepted format, or if the event
-     *         ends before it starts.
-     */
-    public Event(String command) {
-        this(parse(command));
-    }
-
-    private Event(String[] parts) {
-        this(parts[0], parts[1], parts[2]);
-    }
-
-    /**
-     * Returns the description, start and end extracted from the given command.
-     *
-     * @param command Command in the form "event &lt;description&gt; from &lt;date&gt; to &lt;date&gt;".
-     * @return Array holding the description, the start, then the end.
-     * @throws SerangoonerException If any part is missing or blank.
-     */
-    private static String[] parse(String command) {
-        // Parsing logic authored with Codex.
-        int fromIndex = command.indexOf(" from ");
-        int toIndex = command.indexOf(" to ", fromIndex);
-        if (fromIndex <= 6 || toIndex <= fromIndex + 6
-                || toIndex + 4 >= command.length()
-                || command.substring(toIndex + 4).isBlank()) {
-            throw new SerangoonerException(
-                    "INVALID. pls use format: event <description> from <date> to <date>. "
-                            + TaskDateTime.FORMAT_HINT);
-        }
-        return new String[]{command.substring(6, fromIndex),
-                command.substring(fromIndex + 6, toIndex), command.substring(toIndex + 4)};
-    }
-
-    /**
      * Returns the event encoded by the given fields of a saved line.
      *
      * @param fields Fields that one line of the save file was split into.

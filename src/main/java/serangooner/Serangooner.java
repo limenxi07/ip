@@ -6,7 +6,9 @@ import java.nio.file.Path;
  * Runs the Serangooner chatbot as a command line program.
  * This class is the one place that holds the user interface, the task list
  * and the save file together, so it alone decides when a change to the list
- * is written back to disk.
+ * is written back to disk. A command read from the user is handed to the
+ * {@link Parser}, which says what was meant, and the result of acting on it
+ * is handed back to the {@link Ui}.
  */
 public class Serangooner {
     private static final String DEFAULT_FILE_PATH = "data/serangooner.txt";
@@ -42,7 +44,7 @@ public class Serangooner {
         while (ui.hasNextCommand()) {
             String command = ui.readCommand();
             try {
-                CommandType commandType = CommandType.fromInput(command);
+                CommandType commandType = Parser.parseCommandType(command);
                 switch (commandType) {
                     case BYE -> {
                         ui.showFarewell();
@@ -50,15 +52,18 @@ public class Serangooner {
                     }
                     case HELP -> ui.showMessage(CommandType.helpText());
                     case LIST -> ui.showMessage(tasks.toString());
-                    case ON -> ui.showMessage(tasks.occurringOn(command));
+                    case ON -> {
+                        Parser.DateRange range = Parser.parseDateRange(command);
+                        ui.showMessage(tasks.occurringOn(range.start(), range.end()));
+                    }
                     case UNDO -> ui.showMessage(tasks.undo()
                             ? "undid your last edit" : "there's nothing to undo >:(");
-                    case MARK -> ui.showMessage(tasks.mark(command));
-                    case UNMARK -> ui.showMessage(tasks.unmark(command));
-                    case DELETE -> ui.showMessage(tasks.delete(command));
-                    case TODO -> ui.showMessage(tasks.addTodo(command));
-                    case DEADLINE -> ui.showMessage(tasks.addDeadline(command));
-                    case EVENT -> ui.showMessage(tasks.addEvent(command));
+                    case MARK -> ui.showMessage(tasks.mark(Parser.parseTaskNumber(command, commandType)));
+                    case UNMARK -> ui.showMessage(tasks.unmark(Parser.parseTaskNumber(command, commandType)));
+                    case DELETE -> ui.showMessage(tasks.delete(Parser.parseTaskNumber(command, commandType)));
+                    case TODO -> ui.showMessage(tasks.addTodo(Parser.parseTodo(command)));
+                    case DEADLINE -> ui.showMessage(tasks.addDeadline(Parser.parseDeadline(command)));
+                    case EVENT -> ui.showMessage(tasks.addEvent(Parser.parseEvent(command)));
                 }
                 if (commandType.isMutating()) {
                     storage.save(tasks.getTasks());

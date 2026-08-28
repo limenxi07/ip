@@ -1,7 +1,5 @@
 package serangooner;
 
-import java.util.Arrays;
-
 // Enum-based command library refactored with the help of Codex.
 /**
  * Represents a command that a user can enter in Serangooner.
@@ -31,6 +29,10 @@ public enum CommandType {
         this.syntax = syntax;
         this.description = description;
         this.isMutating = isMutating;
+    }
+
+    public String getKeyword() {
+        return keyword;
     }
 
     public String getSyntax() {
@@ -68,30 +70,5 @@ public enum CommandType {
         return output.append(System.lineSeparator())
                 .append(TaskDateTime.FORMAT_HINT)
                 .toString();
-    }
-
-    /**
-     * Returns the command whose keyword matches the first word of the given input.
-     *
-     * @param input Line of input entered by the user.
-     * @return Command matching the first word of the input.
-     * @throws SerangoonerException If the input is blank or matches no command.
-     */
-    public static CommandType fromInput(String input) {
-        // Lookup authored with Codex.
-        if (input.isBlank()) {
-            throw invalidCommand();
-        }
-        String firstWord = input.trim().split("\\s+", 2)[0];
-        return Arrays.stream(values())
-                .filter(command -> command.keyword.equals(firstWord))
-                .findFirst()
-                .orElseThrow(CommandType::invalidCommand);
-    }
-
-    private static SerangoonerException invalidCommand() {
-        return new SerangoonerException(
-                "invalid command :/ if you don't know what you're doing, "
-                        + "pls type 'help' for the command library .-.");
     }
 }

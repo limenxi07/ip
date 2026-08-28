@@ -26,39 +26,6 @@ public class Deadline extends Task {
     }
 
     /**
-     * Constructs a deadline by parsing a full user command.
-     *
-     * @param command Command in the form "deadline &lt;description&gt; by &lt;date&gt;".
-     * @throws SerangoonerException If the command does not follow that form, or
-     *         its date is not in an accepted format.
-     */
-    public Deadline(String command) {
-        this(parse(command));
-    }
-
-    private Deadline(String[] parts) {
-        this(parts[0], parts[1]);
-    }
-
-    /**
-     * Returns the description and deadline extracted from the given command.
-     *
-     * @param command Command in the form "deadline &lt;description&gt; by &lt;date&gt;".
-     * @return Array holding the description followed by the deadline.
-     * @throws SerangoonerException If either part is missing or blank.
-     */
-    private static String[] parse(String command) {
-        // Parsing logic authored with Codex.
-        int byIndex = command.indexOf(" by ");
-        if (byIndex <= 9 || byIndex + 4 >= command.length()
-                || command.substring(byIndex + 4).isBlank()) {
-            throw new SerangoonerException("INVALID. pls use format: deadline <description> by <date>. "
-                    + TaskDateTime.FORMAT_HINT);
-        }
-        return new String[]{command.substring(9, byIndex), command.substring(byIndex + 4)};
-    }
-
-    /**
      * Returns the deadline encoded by the given fields of a saved line.
      *
      * @param fields Fields that one line of the save file was split into.

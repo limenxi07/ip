@@ -46,161 +46,133 @@ public class TaskList {
         return Collections.unmodifiableList(tasks);
     }
 
-    // Methods that parse a raw user command.
+    /**
+     * Adds the given todo to the list.
+     *
+     * @param todo Todo to add.
+     * @return Confirmation message naming the task that was added.
+     */
+    public String addTodo(Todo todo) {
+        return add(todo, "todo");
+    }
 
     /**
-     * Adds a todo described by the given command.
+     * Adds the given deadline to the list.
      *
-     * @param command Command in the form "todo &lt;description&gt;".
+     * @param deadline Deadline to add.
      * @return Confirmation message naming the task that was added.
-     * @throws SerangoonerException If the description is missing.
      */
-    public String addTodo(String command) {
-        String description = command.length() > 5 ? command.substring(5).trim() : "";
-        if (description.isEmpty()) {
-            throw new SerangoonerException("pls name ur task: todo <description>");
-        }
-        Task task = new Todo(description);
+    public String addDeadline(Deadline deadline) {
+        return add(deadline, "deadline");
+    }
+
+    /**
+     * Adds the given event to the list.
+     *
+     * @param event Event to add.
+     * @return Confirmation message naming the task that was added.
+     */
+    public String addEvent(Event event) {
+        return add(event, "event");
+    }
+
+    /**
+     * Adds the given task to the end of the list.
+     *
+     * @param task Task to add.
+     * @param label Name this kind of task goes by in the confirmation message.
+     * @return Confirmation message naming the task that was added.
+     */
+    private String add(Task task, String label) {
         tasks.add(task);
         undoActions.push(() -> tasks.remove(task));
-        return "added todo: " + task + System.lineSeparator()
+        return "added " + label + ": " + task + System.lineSeparator()
                 + "you now have " + size() + " pending task(s) :c";
     }
 
     /**
-     * Adds a deadline described by the given command.
+     * Marks the task at the given position as done.
      *
-     * @param command Command in the form "deadline &lt;description&gt; by &lt;date&gt;".
-     * @return Confirmation message naming the task that was added.
-     * @throws SerangoonerException If the command does not follow that form.
-     */
-    public String addDeadline(String command) {
-        Task task = new Deadline(command);
-        tasks.add(task);
-        undoActions.push(() -> tasks.remove(task));
-        return "added deadline: " + task + System.lineSeparator()
-                + "you now have " + size() + " pending task(s) :c";
-    }
-
-    /**
-     * Adds an event described by the given command.
-     *
-     * @param command Command in the form "event &lt;description&gt; from &lt;date&gt; to &lt;date&gt;".
-     * @return Confirmation message naming the task that was added.
-     * @throws SerangoonerException If the command does not follow that form.
-     */
-    public String addEvent(String command) {
-        Task task = new Event(command);
-        tasks.add(task);
-        undoActions.push(() -> tasks.remove(task));
-        return "added event: " + task + System.lineSeparator()
-                + "you now have " + size() + " pending task(s) :c";
-    }
-
-    /**
-     * Marks the task named by the given command as done.
-     *
-     * @param command Command in the form "mark &lt;number&gt;".
+     * @param taskNumber Position of the task in the list, counting from one.
      * @return Confirmation message naming the task that was marked.
-     * @throws SerangoonerException If the task number is missing or out of range.
+     * @throws SerangoonerException If no task holds that position.
      */
-    public String mark(String command) {
-        return updateStatus(command, "mark", true);
+    public String mark(int taskNumber) {
+        Task task = getTask(taskNumber, "MARK");
+        boolean wasDone = task.isDone();
+        task.markDone();
+        undoActions.push(() -> setDone(task, wasDone));
+        return "marked task as done: " + task;
     }
 
     /**
-     * Marks the task named by the given command as incomplete.
+     * Marks the task at the given position as incomplete.
      *
-     * @param command Command in the form "unmark &lt;number&gt;".
+     * @param taskNumber Position of the task in the list, counting from one.
      * @return Confirmation message naming the task that was unmarked.
-     * @throws SerangoonerException If the task number is missing or out of range.
+     * @throws SerangoonerException If no task holds that position.
      */
-    public String unmark(String command) {
-        return updateStatus(command, "unmark", false);
+    public String unmark(int taskNumber) {
+        Task task = getTask(taskNumber, "UNMARK");
+        boolean wasDone = task.isDone();
+        task.markNotDone();
+        undoActions.push(() -> setDone(task, wasDone));
+        return "marked task as incomplete: " + task;
     }
 
     /**
-     * Returns the outcome of applying the given completion status to the task
-     * named by the command.
+     * Deletes the task at the given position.
      *
-     * @param command Command in the form "&lt;commandName&gt; &lt;number&gt;".
-     * @param commandName Keyword that starts the command.
-     * @param isMarkingDone True to mark the task as done, false to mark it as incomplete.
-     * @return Confirmation message naming the task that changed.
-     * @throws SerangoonerException If the task number is missing or out of range.
+     * @param taskNumber Position of the task in the list, counting from one.
+     * @return Confirmation message naming the task that was deleted.
+     * @throws SerangoonerException If no task holds that position.
      */
-    private String updateStatus(String command, String commandName, boolean isMarkingDone) {
-        int taskNumber = parseTaskNumber(command, commandName);
-        Task task = isMarkingDone ? mark(taskNumber) : unmark(taskNumber);
-        return isMarkingDone ? "marked task as done: " + task : "marked task as incomplete: " + task;
+    public String delete(int taskNumber) {
+        Task task = getTask(taskNumber, "DELETE");
+        tasks.remove(taskNumber - 1);
+        undoActions.push(() -> tasks.add(taskNumber - 1, task));
+        return "deleted task: " + task;
     }
 
     /**
-     * Returns the task number given as the sole argument of the command.
+     * Returns the task at the given position.
      *
-     * @param command Command in the form "&lt;commandName&gt; &lt;number&gt;".
-     * @param commandName Keyword that starts the command.
-     * @return Position of the task in the list, counting from one.
-     * @throws SerangoonerException If the number is missing, not a number, or out of range.
+     * @param taskNumber Position of the task in the list, counting from one.
+     * @param label Name of the command, for use in the error message.
+     * @return Task holding that position.
+     * @throws SerangoonerException If no task holds that position.
      */
-    private int parseTaskNumber(String command, String commandName) {
-        String argument = command.length() > commandName.length()
-                ? command.substring(commandName.length()).trim() : "";
-        String label = commandName.toUpperCase();
-        if (argument.isEmpty()) {
-            throw new SerangoonerException(label + " FAILED. pls use format: " + commandName + " <number>");
-        }
-
-        final int taskNumber;
-        try {
-            taskNumber = Integer.parseInt(argument);
-        } catch (NumberFormatException exception) {
-            throw new SerangoonerException(label + " FAILED. pls give a valid task number", exception);
-        }
+    private Task getTask(int taskNumber, String label) {
         if (taskNumber < 1 || taskNumber > tasks.size()) {
             throw new SerangoonerException(label + " FAILED. task number must be between 1 and "
                     + tasks.size());
         }
-        return taskNumber;
+        return tasks.get(taskNumber - 1);
     }
 
     /**
-     * Deletes the task named by the given command.
+     * Sets whether the given task is complete.
      *
-     * @param command Command in the form "delete &lt;number&gt;".
-     * @return Confirmation message naming the task that was deleted.
-     * @throws SerangoonerException If the task number is missing or out of range.
+     * @param task Task to update.
+     * @param isDone True to mark the task as done, false to mark it as incomplete.
      */
-    public String delete(String command) {
-        return "deleted task: " + delete(parseTaskNumber(command, "delete"));
+    private static void setDone(Task task, boolean isDone) {
+        if (isDone) {
+            task.markDone();
+        } else {
+            task.markNotDone();
+        }
     }
 
     /**
-     * Returns the tasks falling on the date, or within the range of dates,
-     * named by the given command.
+     * Returns the tasks falling on or between the given dates.
      *
-     * @param command Command in the form "on &lt;date&gt;" or "on &lt;date&gt; to &lt;date&gt;".
+     * @param start First date of the range, inclusive.
+     * @param end Last date of the range, inclusive.
      * @return Listing of the matching tasks, keeping the numbers they have in
      *         the full list.
-     * @throws SerangoonerException If a date is missing, is not in an accepted
-     *         format, or the range ends before it starts.
      */
-    public String occurringOn(String command) {
-        String argument = command.length() > 2 ? command.substring(2).trim() : "";
-        if (argument.isEmpty()) {
-            throw new SerangoonerException("pls give a date: on <date> [to <date>]. "
-                    + TaskDateTime.FORMAT_HINT);
-        }
-
-        int toIndex = argument.indexOf(" to ");
-        LocalDate start = TaskDateTime.parseDate(
-                toIndex < 0 ? argument : argument.substring(0, toIndex));
-        LocalDate end = toIndex < 0 ? start
-                : TaskDateTime.parseDate(argument.substring(toIndex + 4));
-        if (end.isBefore(start)) {
-            throw new SerangoonerException("that range ends before it starts o.O");
-        }
-
+    public String occurringOn(LocalDate start, LocalDate end) {
         String range = start.equals(end)
                 ? "on " + TaskDateTime.format(start)
                 : "between " + TaskDateTime.format(start) + " and " + TaskDateTime.format(end);
@@ -208,65 +180,11 @@ public class TaskList {
                 task -> task.isWithin(start, end));
     }
 
-    // Methods that act on tasks directly.
-
     /**
      * Returns the number of tasks currently stored.
      */
     public int size() {
         return tasks.size();
-    }
-
-    /**
-     * Marks the task at the given position as done.
-     *
-     * @param taskNumber Position of the task in the list, counting from one.
-     * @return Task that was marked.
-     */
-    public Task mark(int taskNumber) {
-        Task task = tasks.get(taskNumber - 1);
-        boolean wasDone = task.isDone();
-        task.markDone();
-        undoActions.push(() -> {
-            if (wasDone) {
-                task.markDone();
-            } else {
-                task.markNotDone();
-            }
-        });
-        return task;
-    }
-
-    /**
-     * Marks the task at the given position as incomplete.
-     *
-     * @param taskNumber Position of the task in the list, counting from one.
-     * @return Task that was unmarked.
-     */
-    public Task unmark(int taskNumber) {
-        Task task = tasks.get(taskNumber - 1);
-        boolean wasDone = task.isDone();
-        task.markNotDone();
-        undoActions.push(() -> {
-            if (wasDone) {
-                task.markDone();
-            } else {
-                task.markNotDone();
-            }
-        });
-        return task;
-    }
-
-    /**
-     * Deletes the task at the given position.
-     *
-     * @param taskNumber Position of the task in the list, counting from one.
-     * @return Task that was deleted.
-     */
-    public Task delete(int taskNumber) {
-        Task task = tasks.remove(taskNumber - 1);
-        undoActions.push(() -> tasks.add(taskNumber - 1, task));
-        return task;
     }
 
     /**
