@@ -20,11 +20,12 @@ public abstract class Command {
      * sees.
      *
      * @param tasks Task list to act on.
-     * @param ui User interface to report the outcome through.
+     * @param ui Wording to describe the outcome with.
      * @param storage Save file to write any change to.
+     * @return What the chatbot says about the outcome.
      * @throws SerangoonerException If the command cannot be carried out.
      */
-    public abstract void execute(TaskList tasks, Ui ui, Storage storage);
+    public abstract String execute(TaskList tasks, Ui ui, Storage storage);
 
     /**
      * Returns whether the program should stop after this command.

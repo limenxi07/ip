@@ -21,8 +21,8 @@ public class OnCommand extends Command {
     }
 
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) {
-        ui.showTasksInRange(tasks.getEntriesWithin(range.start(), range.end()),
+    public String execute(TaskList tasks, Ui ui, Storage storage) {
+        return ui.formatTasksInRange(tasks.getEntriesWithin(range.start(), range.end()),
                 range.start(), range.end());
     }
 }

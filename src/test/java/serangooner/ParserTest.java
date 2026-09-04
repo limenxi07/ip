@@ -5,10 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
@@ -300,11 +296,9 @@ public class ParserTest {
     public void parse_commandTakingANumber_carriesThatNumberIntoTheCommand(
             @TempDir Path directory) {
         TaskList tasks = new TaskList(List.of(new Todo("read book"), new Todo("write essay")));
-        Ui ui = new Ui(new ByteArrayInputStream(new byte[0]),
-                new PrintStream(new ByteArrayOutputStream(), true, StandardCharsets.UTF_8));
         Storage storage = new Storage(directory.resolve("tasks.txt"));
 
-        Parser.parse("delete 2").execute(tasks, ui, storage);
+        Parser.parse("delete 2").execute(tasks, new Ui(), storage);
 
         assertEquals(1, tasks.size());
         assertEquals("[T][ ] read book", tasks.getTasks().get(0).toString());
@@ -321,8 +315,7 @@ public class ParserTest {
     @Test
     public void parse_markAndUnmark_carryTheirNumbersIntoTheCommand(@TempDir Path directory) {
         TaskList tasks = new TaskList(List.of(new Todo("read book"), new Todo("write essay")));
-        Ui ui = new Ui(new ByteArrayInputStream(new byte[0]),
-                new PrintStream(new ByteArrayOutputStream(), true, StandardCharsets.UTF_8));
+        Ui ui = new Ui();
         Storage storage = new Storage(directory.resolve("tasks.txt"));
 
         Parser.parse("mark 2").execute(tasks, ui, storage);
@@ -340,16 +333,11 @@ public class ParserTest {
         TaskList tasks = new TaskList(List.of(
                 new Deadline("submit ip", "2026-09-01"),
                 new Deadline("submit tp", "2026-09-09")));
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        Ui ui = new Ui(new ByteArrayInputStream(new byte[0]),
-                new PrintStream(output, true, StandardCharsets.UTF_8));
+        String response = Parser.parse("on 2026-09-01 to 2026-09-09")
+                .execute(tasks, new Ui(), new Storage(directory.resolve("tasks.txt")));
 
-        Parser.parse("on 2026-09-01 to 2026-09-09")
-                .execute(tasks, ui, new Storage(directory.resolve("tasks.txt")));
-
-        String printed = output.toString(StandardCharsets.UTF_8);
-        assertTrue(printed.contains("submit ip"));
-        assertTrue(printed.contains("submit tp"));
+        assertTrue(response.contains("submit ip"));
+        assertTrue(response.contains("submit tp"));
     }
 
     @Test
@@ -386,14 +374,10 @@ public class ParserTest {
     @Test
     public void parse_findCommand_carriesTheKeywordIntoTheCommand(@TempDir Path directory) {
         TaskList tasks = new TaskList(List.of(new Todo("read book"), new Todo("write essay")));
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        Ui ui = new Ui(new ByteArrayInputStream(new byte[0]),
-                new PrintStream(output, true, StandardCharsets.UTF_8));
+        String response = Parser.parse("find book")
+                .execute(tasks, new Ui(), new Storage(directory.resolve("tasks.txt")));
 
-        Parser.parse("find book").execute(tasks, ui, new Storage(directory.resolve("tasks.txt")));
-
-        String printed = output.toString(StandardCharsets.UTF_8);
-        assertTrue(printed.contains("read book"));
-        assertFalse(printed.contains("write essay"));
+        assertTrue(response.contains("read book"));
+        assertFalse(response.contains("write essay"));
     }
 }

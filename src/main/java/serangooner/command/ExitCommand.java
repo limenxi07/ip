@@ -9,8 +9,8 @@ import serangooner.ui.Ui;
  */
 public class ExitCommand extends Command {
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) {
-        ui.showFarewell();
+    public String execute(TaskList tasks, Ui ui, Storage storage) {
+        return ui.formatFarewell();
     }
 
     @Override

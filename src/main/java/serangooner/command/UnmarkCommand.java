@@ -1,6 +1,7 @@
 package serangooner.command;
 
 import serangooner.storage.Storage;
+import serangooner.task.Task;
 import serangooner.task.TaskList;
 import serangooner.ui.Ui;
 
@@ -20,8 +21,9 @@ public class UnmarkCommand extends Command {
     }
 
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) {
-        ui.showTaskUnmarked(tasks.unmark(taskNumber));
+    public String execute(TaskList tasks, Ui ui, Storage storage) {
+        Task unmarkedTask = tasks.unmark(taskNumber);
         storage.save(tasks.getTasks());
+        return ui.formatTaskUnmarked(unmarkedTask);
     }
 }

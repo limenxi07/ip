@@ -5,13 +5,14 @@ import java.nio.file.Path;
 import serangooner.command.Command;
 import serangooner.storage.Storage;
 import serangooner.task.TaskList;
+import serangooner.ui.Console;
 import serangooner.ui.Ui;
 
 /**
  * Runs the Serangooner chatbot as a command line program.
- * This class is the one place that holds the user interface, the task list
- * and the save file together, so it alone decides when a change to the list
- * is written back to disk. A line read from the user is handed to the
+ * This class is the one place that holds the wording, the task list and the
+ * save file together, so it alone decides when a change to the list is
+ * written back to disk. A line read from the user is handed to the
  * {@link Parser}, which returns the {@link Command} it asks for, and running
  * that command is all this class has left to do.
  */
@@ -44,20 +45,22 @@ public class Serangooner {
      * a divider, whether the command succeeded or not.
      */
     public void run() {
-        ui.showWelcome();
-        ui.showLoadReport(loadResult);
+        Console console = new Console();
+        console.showBanner();
+        console.showBlock(ui.formatWelcome());
+        console.showBlock(ui.formatLoadReport(loadResult));
 
         boolean isExit = false;
-        while (!isExit && ui.hasNextCommand()) {
+        while (!isExit && console.hasNextCommand()) {
             try {
-                String fullCommand = ui.readCommand();
+                String fullCommand = console.readCommand();
                 Command command = Parser.parse(fullCommand);
-                command.execute(tasks, ui, storage);
+                console.show(command.execute(tasks, ui, storage));
                 isExit = command.isExit();
             } catch (SerangoonerException exception) {
-                ui.showError(exception.getMessage());
+                console.showError(exception.getMessage());
             } finally {
-                ui.showDivider();
+                console.showDivider();
             }
         }
     }

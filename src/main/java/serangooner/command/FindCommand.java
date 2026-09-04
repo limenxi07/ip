@@ -20,7 +20,7 @@ public class FindCommand extends Command {
     }
 
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) {
-        ui.showMatchingTasks(tasks.getEntriesMatching(keyword), keyword);
+    public String execute(TaskList tasks, Ui ui, Storage storage) {
+        return ui.formatMatchingTasks(tasks.getEntriesMatching(keyword), keyword);
     }
 }
