@@ -77,15 +77,16 @@ public abstract class Task {
      * A task that sits at a single point in time passes that point as both
      * ends of its span.
      *
-     * @param from Start of the span the task occupies.
-     * @param to End of the span the task occupies.
+     * @param startDateTime Start of the span the task occupies.
+     * @param endDateTime End of the span the task occupies.
      * @param start First date of the range, inclusive.
      * @param end Last date of the range, inclusive.
      * @return True if the span and the range share at least one date.
      */
-    protected static boolean isOverlapping(TaskDateTime from, TaskDateTime to,
+    protected static boolean isOverlapping(TaskDateTime startDateTime, TaskDateTime endDateTime,
             LocalDate start, LocalDate end) {
-        return !from.toLocalDate().isAfter(end) && !to.toLocalDate().isBefore(start);
+        return !startDateTime.toLocalDate().isAfter(end)
+                && !endDateTime.toLocalDate().isBefore(start);
     }
 
     /**
@@ -99,7 +100,7 @@ public abstract class Task {
      * @param factory Builds the task once the line is known to be usable.
      * @return Task the line describes, or nothing if it cannot be read.
      */
-    protected static Optional<Task> readSaveLine(String[] fields, int fieldCount,
+    protected static Optional<Task> buildFromSaveFields(String[] fields, int fieldCount,
             Function<String[], Task> factory) {
         if (fields.length != fieldCount) {
             return Optional.empty();

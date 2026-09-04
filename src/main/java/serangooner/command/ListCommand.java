@@ -10,6 +10,6 @@ import serangooner.ui.Ui;
 public class ListCommand extends Command {
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) {
-        ui.showTasks(tasks.entries());
+        ui.showTasks(tasks.getEntries());
     }
 }

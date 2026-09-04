@@ -86,8 +86,8 @@ public class EventTest {
     }
 
     @Test
-    public void fromSaveFields_validLine_returnsEvent() {
-        Optional<Task> task = Event.fromSaveFields(
+    public void parseSaveFields_validLine_returnsEvent() {
+        Optional<Task> task = Event.parseSaveFields(
                 new String[] {"E", "0", "demo", "2026-09-05 1400", "2026-09-05 1600"});
         assertTrue(task.isPresent());
         assertEquals("[E][ ] demo (from: 05 Sep 2026, 2:00PM to: 05 Sep 2026, 4:00PM)",
@@ -95,14 +95,14 @@ public class EventTest {
     }
 
     @Test
-    public void fromSaveFields_endBeforeStart_returnsNothing() {
-        assertTrue(Event.fromSaveFields(
+    public void parseSaveFields_endBeforeStart_returnsNothing() {
+        assertTrue(Event.parseSaveFields(
                 new String[] {"E", "0", "demo", "2026-09-05", "2026-09-04"}).isEmpty());
     }
 
     @Test
-    public void fromSaveFields_missingEndField_returnsNothing() {
-        assertTrue(Event.fromSaveFields(
+    public void parseSaveFields_missingEndField_returnsNothing() {
+        assertTrue(Event.parseSaveFields(
                 new String[] {"E", "0", "demo", "2026-09-05"}).isEmpty());
     }
 

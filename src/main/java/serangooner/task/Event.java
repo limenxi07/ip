@@ -11,25 +11,25 @@ import serangooner.SerangoonerException;
 public class Event extends Task {
     /** Code identifying an event in the save file. */
     public static final String SAVE_CODE = "E";
-    private static final int SAVE_FIELDS = 5;
+    private static final int SAVE_FIELD_COUNT = 5;
 
-    private final TaskDateTime from;
-    private final TaskDateTime to;
+    private final TaskDateTime startDateTime;
+    private final TaskDateTime endDateTime;
 
     /**
      * Constructs an event from a description and two unparsed dates.
      *
      * @param description Text describing what the event involves.
-     * @param from Date, and optionally time, at which the event starts.
-     * @param to Date, and optionally time, at which the event ends.
+     * @param startDateTime Date, and optionally time, at which the event starts.
+     * @param endDateTime Date, and optionally time, at which the event ends.
      * @throws SerangoonerException If either date is not in an accepted format,
      *         or the event ends before it starts.
      */
-    public Event(String description, String from, String to) {
+    public Event(String description, String startDateTime, String endDateTime) {
         super(description);
-        this.from = TaskDateTime.parse(from);
-        this.to = TaskDateTime.parse(to);
-        if (this.to.isBefore(this.from)) {
+        this.startDateTime = TaskDateTime.parse(startDateTime);
+        this.endDateTime = TaskDateTime.parse(endDateTime);
+        if (this.endDateTime.isBefore(this.startDateTime)) {
             throw new SerangoonerException("INVALID. ur event ends before it starts o.O");
         }
     }
@@ -40,8 +40,9 @@ public class Event extends Task {
      * @param fields Fields that one line of the save file was split into.
      * @return Event the line describes, or nothing if it cannot be read.
      */
-    public static Optional<Task> fromSaveFields(String[] fields) {
-        return readSaveLine(fields, SAVE_FIELDS, f -> new Event(f[2], f[3], f[4]));
+    public static Optional<Task> parseSaveFields(String[] fields) {
+        return buildFromSaveFields(fields, SAVE_FIELD_COUNT,
+                validFields -> new Event(validFields[2], validFields[3], validFields[4]));
     }
 
     @Override
@@ -51,18 +52,19 @@ public class Event extends Task {
 
     @Override
     public boolean isWithin(LocalDate start, LocalDate end) {
-        return isOverlapping(from, to, start, end);
+        return isOverlapping(startDateTime, endDateTime, start, end);
     }
 
     @Override
     public String toSaveFormat() {
         return SAVE_CODE + SAVE_DELIMITER + super.toSaveFormat()
-                + SAVE_DELIMITER + from.toSaveFormat() + SAVE_DELIMITER + to.toSaveFormat();
+                + SAVE_DELIMITER + startDateTime.toSaveFormat()
+                + SAVE_DELIMITER + endDateTime.toSaveFormat();
     }
 
     @Override
     public String toString() {
         return "[E]" + (isDone() ? "[✓] " : "[ ] ")
-                + getDescription() + " (from: " + from + " to: " + to + ")";
+                + getDescription() + " (from: " + startDateTime + " to: " + endDateTime + ")";
     }
 }

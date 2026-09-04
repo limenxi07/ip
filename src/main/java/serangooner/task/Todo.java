@@ -8,7 +8,7 @@ import java.util.Optional;
 public class Todo extends Task {
     /** Code identifying a todo in the save file. */
     public static final String SAVE_CODE = "T";
-    private static final int SAVE_FIELDS = 3;
+    private static final int SAVE_FIELD_COUNT = 3;
 
     /**
      * Constructs a todo with the given description.
@@ -25,8 +25,9 @@ public class Todo extends Task {
      * @param fields Fields that one line of the save file was split into.
      * @return Todo the line describes, or nothing if it cannot be read.
      */
-    public static Optional<Task> fromSaveFields(String[] fields) {
-        return readSaveLine(fields, SAVE_FIELDS, f -> new Todo(f[2]));
+    public static Optional<Task> parseSaveFields(String[] fields) {
+        return buildFromSaveFields(fields, SAVE_FIELD_COUNT,
+                validFields -> new Todo(validFields[2]));
     }
 
     @Override

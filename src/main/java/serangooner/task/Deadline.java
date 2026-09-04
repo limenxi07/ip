@@ -11,7 +11,7 @@ import serangooner.SerangoonerException;
 public class Deadline extends Task {
     /** Code identifying a deadline in the save file. */
     public static final String SAVE_CODE = "D";
-    private static final int SAVE_FIELDS = 4;
+    private static final int SAVE_FIELD_COUNT = 4;
 
     private final TaskDateTime deadline;
 
@@ -33,8 +33,9 @@ public class Deadline extends Task {
      * @param fields Fields that one line of the save file was split into.
      * @return Deadline the line describes, or nothing if it cannot be read.
      */
-    public static Optional<Task> fromSaveFields(String[] fields) {
-        return readSaveLine(fields, SAVE_FIELDS, f -> new Deadline(f[2], f[3]));
+    public static Optional<Task> parseSaveFields(String[] fields) {
+        return buildFromSaveFields(fields, SAVE_FIELD_COUNT,
+                validFields -> new Deadline(validFields[2], validFields[3]));
     }
 
     @Override

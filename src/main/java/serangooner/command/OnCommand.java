@@ -22,7 +22,7 @@ public class OnCommand extends Command {
 
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) {
-        ui.showTasksInRange(tasks.occurringOn(range.start(), range.end()),
+        ui.showTasksInRange(tasks.getEntriesWithin(range.start(), range.end()),
                 range.start(), range.end());
     }
 }

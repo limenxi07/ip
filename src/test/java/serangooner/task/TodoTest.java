@@ -41,37 +41,37 @@ public class TodoTest {
     }
 
     @Test
-    public void fromSaveFields_validLine_returnsTodo() {
-        Optional<Task> task = Todo.fromSaveFields(new String[] {"T", "0", "read book"});
+    public void parseSaveFields_validLine_returnsTodo() {
+        Optional<Task> task = Todo.parseSaveFields(new String[] {"T", "0", "read book"});
         assertTrue(task.isPresent());
         assertEquals("[T][ ] read book", task.get().toString());
     }
 
     @Test
-    public void fromSaveFields_doneFlag_returnsTaskAlreadyMarkedDone() {
-        Optional<Task> task = Todo.fromSaveFields(new String[] {"T", "1", "read book"});
+    public void parseSaveFields_doneFlag_returnsTaskAlreadyMarkedDone() {
+        Optional<Task> task = Todo.parseSaveFields(new String[] {"T", "1", "read book"});
         assertTrue(task.isPresent());
         assertTrue(task.get().isDone());
     }
 
     @Test
-    public void fromSaveFields_tooFewFields_returnsNothing() {
-        assertTrue(Todo.fromSaveFields(new String[] {"T", "0"}).isEmpty());
+    public void parseSaveFields_tooFewFields_returnsNothing() {
+        assertTrue(Todo.parseSaveFields(new String[] {"T", "0"}).isEmpty());
     }
 
     @Test
-    public void fromSaveFields_tooManyFields_returnsNothing() {
-        assertTrue(Todo.fromSaveFields(new String[] {"T", "0", "read book", "extra"}).isEmpty());
+    public void parseSaveFields_tooManyFields_returnsNothing() {
+        assertTrue(Todo.parseSaveFields(new String[] {"T", "0", "read book", "extra"}).isEmpty());
     }
 
     @Test
-    public void fromSaveFields_blankField_returnsNothing() {
-        assertTrue(Todo.fromSaveFields(new String[] {"T", "0", "   "}).isEmpty());
+    public void parseSaveFields_blankField_returnsNothing() {
+        assertTrue(Todo.parseSaveFields(new String[] {"T", "0", "   "}).isEmpty());
     }
 
     @Test
-    public void fromSaveFields_unrecognizedDoneFlag_returnsNothing() {
-        assertTrue(Todo.fromSaveFields(new String[] {"T", "7", "read book"}).isEmpty());
+    public void parseSaveFields_unrecognizedDoneFlag_returnsNothing() {
+        assertTrue(Todo.parseSaveFields(new String[] {"T", "7", "read book"}).isEmpty());
     }
 
     @Test

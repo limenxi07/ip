@@ -109,10 +109,10 @@ public class TaskListTest {
     }
 
     @Test
-    public void entries_always_numbersFromOne() {
+    public void getEntries_always_numbersFromOne() {
         TaskList tasks = new TaskList(List.of(new Todo("read book"), new Todo("write essay")));
 
-        List<TaskList.Entry> entries = tasks.entries();
+        List<TaskList.Entry> entries = tasks.getEntries();
 
         assertEquals(2, entries.size());
         assertEquals(1, entries.get(0).number());
@@ -121,28 +121,28 @@ public class TaskListTest {
     }
 
     @Test
-    public void occurringOn_singleDate_returnsOnlyMatchingTasks() {
+    public void getEntriesWithin_singleDate_returnsOnlyMatchingTasks() {
         TaskList tasks = new TaskList(List.of(
                 new Todo("read book"),
                 new Deadline("submit ip", "2026-09-01"),
                 new Deadline("submit tp", "2026-09-02")));
 
         List<TaskList.Entry> entries =
-                tasks.occurringOn(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 1));
+                tasks.getEntriesWithin(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 1));
 
         assertEquals(1, entries.size());
         assertEquals("[D][ ] submit ip (by: 01 Sep 2026)", entries.get(0).task().toString());
     }
 
     @Test
-    public void occurringOn_range_keepsNumbersFromTheFullList() {
+    public void getEntriesWithin_range_keepsNumbersFromTheFullList() {
         TaskList tasks = new TaskList(List.of(
                 new Todo("read book"),
                 new Deadline("submit ip", "2026-09-01"),
                 new Deadline("submit tp", "2026-09-02")));
 
         List<TaskList.Entry> entries =
-                tasks.occurringOn(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 2));
+                tasks.getEntriesWithin(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 2));
 
         assertEquals(2, entries.size());
         assertEquals(2, entries.get(0).number());
@@ -150,9 +150,9 @@ public class TaskListTest {
     }
 
     @Test
-    public void occurringOn_noMatchingTask_returnsNothing() {
+    public void getEntriesWithin_noMatchingTask_returnsNothing() {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
-        assertTrue(tasks.occurringOn(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 1)).isEmpty());
+        assertTrue(tasks.getEntriesWithin(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 1)).isEmpty());
     }
 
     @Test
@@ -192,16 +192,16 @@ public class TaskListTest {
     }
 
     @Test
-    public void occurringOn_rangeEndingOnTheTaskDate_includesIt() {
+    public void getEntriesWithin_rangeEndingOnTheTaskDate_includesIt() {
         TaskList tasks = new TaskList(List.of(new Deadline("submit ip", "2026-09-05")));
-        assertEquals(1, tasks.occurringOn(LocalDate.of(2026, 9, 1),
+        assertEquals(1, tasks.getEntriesWithin(LocalDate.of(2026, 9, 1),
                 LocalDate.of(2026, 9, 5)).size());
     }
 
     @Test
-    public void occurringOn_rangeStartingOnTheTaskDate_includesIt() {
+    public void getEntriesWithin_rangeStartingOnTheTaskDate_includesIt() {
         TaskList tasks = new TaskList(List.of(new Deadline("submit ip", "2026-09-01")));
-        assertEquals(1, tasks.occurringOn(LocalDate.of(2026, 9, 1),
+        assertEquals(1, tasks.getEntriesWithin(LocalDate.of(2026, 9, 1),
                 LocalDate.of(2026, 9, 5)).size());
     }
 
@@ -238,14 +238,14 @@ public class TaskListTest {
     }
 
     @Test
-    public void entries_emptyList_returnsNothing() {
-        assertEquals(List.of(), new TaskList().entries());
+    public void getEntries_emptyList_returnsNothing() {
+        assertEquals(List.of(), new TaskList().getEntries());
     }
 
     @Test
-    public void entries_always_pairsEachNumberWithItsOwnTask() {
+    public void getEntries_always_pairsEachNumberWithItsOwnTask() {
         TaskList tasks = new TaskList(List.of(new Todo("read book"), new Todo("write essay")));
-        List<TaskList.Entry> entries = tasks.entries();
+        List<TaskList.Entry> entries = tasks.getEntries();
         assertEquals(2, entries.get(1).number());
         assertSame(tasks.getTasks().get(1), entries.get(1).task());
     }
@@ -264,10 +264,10 @@ public class TaskListTest {
     }
 
     @Test
-    public void occurringOn_taskCarryingNoDate_leavesItOut() {
+    public void getEntriesWithin_taskCarryingNoDate_leavesItOut() {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
         assertEquals(List.of(),
-                tasks.occurringOn(LocalDate.MIN, LocalDate.MAX));
+                tasks.getEntriesWithin(LocalDate.MIN, LocalDate.MAX));
     }
 
     @Test
@@ -322,11 +322,11 @@ public class TaskListTest {
     }
 
     @Test
-    public void matching_keywordInSomeDescriptions_returnsOnlyThoseTasks() {
+    public void getEntriesMatching_keywordInSomeDescriptions_returnsOnlyThoseTasks() {
         TaskList tasks = new TaskList(List.of(new Todo("read book"),
                 new Todo("write essay"), new Todo("return book")));
 
-        List<TaskList.Entry> matches = tasks.matching("book");
+        List<TaskList.Entry> matches = tasks.getEntriesMatching("book");
 
         assertEquals(2, matches.size());
         assertEquals("[T][ ] read book", matches.get(0).task().toString());
@@ -334,58 +334,58 @@ public class TaskListTest {
     }
 
     @Test
-    public void matching_always_keepsTheNumbersFromTheFullList() {
+    public void getEntriesMatching_always_keepsTheNumbersFromTheFullList() {
         // A number read off the matches has to stay usable with mark and delete.
         TaskList tasks = new TaskList(List.of(new Todo("write essay"),
                 new Todo("read book"), new Todo("nap"), new Todo("return book")));
 
-        List<TaskList.Entry> matches = tasks.matching("book");
+        List<TaskList.Entry> matches = tasks.getEntriesMatching("book");
 
         assertEquals(2, matches.get(0).number());
         assertEquals(4, matches.get(1).number());
     }
 
     @Test
-    public void matching_keywordInAnotherCase_stillFindsTheTask() {
+    public void getEntriesMatching_keywordInAnotherCase_stillFindsTheTask() {
         TaskList tasks = new TaskList(List.of(new Todo("Read Book")));
-        assertEquals(1, tasks.matching("book").size());
-        assertEquals(1, tasks.matching("BOOK").size());
-        assertEquals(1, tasks.matching("bOoK").size());
+        assertEquals(1, tasks.getEntriesMatching("book").size());
+        assertEquals(1, tasks.getEntriesMatching("BOOK").size());
+        assertEquals(1, tasks.getEntriesMatching("bOoK").size());
     }
 
     @Test
-    public void matching_keywordInNoDescription_returnsNothing() {
+    public void getEntriesMatching_keywordInNoDescription_returnsNothing() {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
-        assertEquals(List.of(), tasks.matching("essay"));
+        assertEquals(List.of(), tasks.getEntriesMatching("essay"));
     }
 
     @Test
-    public void matching_partOfAWord_stillFindsTheTask() {
+    public void getEntriesMatching_partOfAWord_stillFindsTheTask() {
         TaskList tasks = new TaskList(List.of(new Todo("reading")));
-        assertEquals(1, tasks.matching("read").size());
+        assertEquals(1, tasks.getEntriesMatching("read").size());
     }
 
     @Test
-    public void matching_everyTaskType_searchesTheDescriptionAlone() {
+    public void getEntriesMatching_everyTaskType_searchesTheDescriptionAlone() {
         // The date of a deadline is not part of its description, so a keyword
         // that only appears in the date must not match.
         TaskList tasks = new TaskList(List.of(new Todo("read book"),
                 new Deadline("return book", "2026-09-01"),
                 new Event("book fair", "2026-09-03", "2026-09-04")));
 
-        assertEquals(3, tasks.matching("book").size());
-        assertEquals(List.of(), tasks.matching("2026"));
+        assertEquals(3, tasks.getEntriesMatching("book").size());
+        assertEquals(List.of(), tasks.getEntriesMatching("2026"));
     }
 
     @Test
-    public void matching_emptyList_returnsNothing() {
-        assertEquals(List.of(), new TaskList().matching("book"));
+    public void getEntriesMatching_emptyList_returnsNothing() {
+        assertEquals(List.of(), new TaskList().getEntriesMatching("book"));
     }
 
     @Test
-    public void matching_always_leavesTheListUntouched() {
+    public void getEntriesMatching_always_leavesTheListUntouched() {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
-        tasks.matching("book");
+        tasks.getEntriesMatching("book");
         assertEquals(1, tasks.size());
         assertFalse(tasks.undo());
     }

@@ -79,8 +79,8 @@ public class DeadlineTest {
     }
 
     @Test
-    public void fromSaveFields_validLine_returnsDeadline() {
-        Optional<Task> task = Deadline.fromSaveFields(
+    public void parseSaveFields_validLine_returnsDeadline() {
+        Optional<Task> task = Deadline.parseSaveFields(
                 new String[] {"D", "1", "submit ip", "2026-09-01 1800"});
         assertTrue(task.isPresent());
         assertTrue(task.get().isDone());
@@ -88,14 +88,14 @@ public class DeadlineTest {
     }
 
     @Test
-    public void fromSaveFields_unreadableDate_returnsNothing() {
-        assertTrue(Deadline.fromSaveFields(
+    public void parseSaveFields_unreadableDate_returnsNothing() {
+        assertTrue(Deadline.parseSaveFields(
                 new String[] {"D", "0", "submit ip", "not-a-date"}).isEmpty());
     }
 
     @Test
-    public void fromSaveFields_missingDateField_returnsNothing() {
-        assertTrue(Deadline.fromSaveFields(new String[] {"D", "0", "submit ip"}).isEmpty());
+    public void parseSaveFields_missingDateField_returnsNothing() {
+        assertTrue(Deadline.parseSaveFields(new String[] {"D", "0", "submit ip"}).isEmpty());
     }
 
     @Test
@@ -110,8 +110,8 @@ public class DeadlineTest {
     }
 
     @Test
-    public void fromSaveFields_blankDescription_returnsNothing() {
-        assertTrue(Deadline.fromSaveFields(
+    public void parseSaveFields_blankDescription_returnsNothing() {
+        assertTrue(Deadline.parseSaveFields(
                 new String[] {"D", "0", "  ", "2026-09-01"}).isEmpty());
     }
 }

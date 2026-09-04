@@ -165,7 +165,7 @@ public class UiTest {
 
     @Test
     public void showTasks_severalTasks_numbersThemUnderAHeading() {
-        uiReading("").showTasks(new TaskList(threeTasks()).entries());
+        uiReading("").showTasks(new TaskList(threeTasks()).getEntries());
         List<String> lines = printedLines();
         assertEquals("your list", lines.get(0));
         assertEquals(" 1. [T][ ] read book", lines.get(1));
@@ -174,7 +174,7 @@ public class UiTest {
 
     @Test
     public void showTasks_emptyList_saysSo() {
-        uiReading("").showTasks(new TaskList().entries());
+        uiReading("").showTasks(new TaskList().getEntries());
         assertTrue(output.toString(StandardCharsets.UTF_8).startsWith("your list is empty"));
     }
 
@@ -183,7 +183,7 @@ public class UiTest {
         TaskList tasks = new TaskList(List.of(new Deadline("submit ip", "2026-09-01")));
         LocalDate date = LocalDate.of(2026, 9, 1);
 
-        uiReading("").showTasksInRange(tasks.occurringOn(date, date), date, date);
+        uiReading("").showTasksInRange(tasks.getEntriesWithin(date, date), date, date);
 
         assertEquals("tasks on 01 Sep 2026", printedLines().get(0));
     }
@@ -194,7 +194,7 @@ public class UiTest {
         LocalDate start = LocalDate.of(2026, 9, 1);
         LocalDate end = LocalDate.of(2026, 9, 4);
 
-        uiReading("").showTasksInRange(tasks.occurringOn(start, end), start, end);
+        uiReading("").showTasksInRange(tasks.getEntriesWithin(start, end), start, end);
 
         assertEquals("tasks between 01 Sep 2026 and 04 Sep 2026", printedLines().get(0));
     }
@@ -202,7 +202,7 @@ public class UiTest {
     @Test
     public void showTasksInRange_noMatchingTask_saysSo() {
         LocalDate date = LocalDate.of(2026, 9, 1);
-        uiReading("").showTasksInRange(new TaskList().occurringOn(date, date), date, date);
+        uiReading("").showTasksInRange(new TaskList().getEntriesWithin(date, date), date, date);
         assertEquals("you have nothing on 01 Sep 2026 :D" + System.lineSeparator(),
                 output.toString(StandardCharsets.UTF_8));
     }
@@ -268,7 +268,7 @@ public class UiTest {
         LocalDate start = LocalDate.of(2026, 9, 1);
         LocalDate end = LocalDate.of(2026, 9, 2);
 
-        uiReading("").showTasksInRange(tasks.occurringOn(start, end), start, end);
+        uiReading("").showTasksInRange(tasks.getEntriesWithin(start, end), start, end);
 
         List<String> lines = printedLines();
         assertEquals(" 2. [D][ ] submit ip (by: 01 Sep 2026)", lines.get(1));
@@ -286,7 +286,7 @@ public class UiTest {
         TaskList tasks = new TaskList(List.of(new Todo("write essay"),
                 new Todo("read book"), new Todo("return book")));
 
-        uiReading("").showMatchingTasks(tasks.matching("book"), "book");
+        uiReading("").showMatchingTasks(tasks.getEntriesMatching("book"), "book");
 
         List<String> lines = printedLines();
         assertEquals("matching tasks:", lines.get(0));
@@ -296,7 +296,7 @@ public class UiTest {
 
     @Test
     public void showMatchingTasks_noMatch_saysSoAndQuotesTheKeyword() {
-        uiReading("").showMatchingTasks(new TaskList().matching("book"), "book");
+        uiReading("").showMatchingTasks(new TaskList().getEntriesMatching("book"), "book");
         assertEquals("no task mentions 'book' :o" + System.lineSeparator(),
                 output.toString(StandardCharsets.UTF_8));
     }

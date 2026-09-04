@@ -35,9 +35,9 @@ import serangooner.task.Todo;
  * {@link serangooner.storage.Storage Storage}.
  */
 public class Parser {
-    private static final String BY_SEPARATOR = " by ";
-    private static final String FROM_SEPARATOR = " from ";
-    private static final String TO_SEPARATOR = " to ";
+    private static final String SEPARATOR_BY = " by ";
+    private static final String SEPARATOR_FROM = " from ";
+    private static final String SEPARATOR_TO = " to ";
 
     private Parser() {
         // A parser holds nothing of its own, so there is never a reason to build one.
@@ -81,13 +81,13 @@ public class Parser {
     public static CommandType parseCommandType(String input) {
         // Lookup authored with Codex.
         if (input.isBlank()) {
-            throw invalidCommand();
+            throw createInvalidCommandException();
         }
         String firstWord = input.trim().split("\\s+", 2)[0];
         return Arrays.stream(CommandType.values())
                 .filter(command -> command.getKeyword().equals(firstWord))
                 .findFirst()
-                .orElseThrow(Parser::invalidCommand);
+                .orElseThrow(Parser::createInvalidCommandException);
     }
 
     /**
@@ -98,7 +98,7 @@ public class Parser {
      * @throws SerangoonerException If the description is missing.
      */
     public static Todo parseTodo(String command) {
-        String description = argumentOf(command, CommandType.TODO);
+        String description = getArgument(command, CommandType.TODO);
         if (description.isEmpty()) {
             throw new SerangoonerException("pls name ur task: " + CommandType.TODO.getSyntax());
         }
@@ -116,12 +116,12 @@ public class Parser {
     public static Deadline parseDeadline(String rawCommand) {
         // Parsing logic authored with Codex.
         String command = rawCommand.trim();
-        int descriptionStart = startOfArgument(CommandType.DEADLINE);
-        int byIndex = command.indexOf(BY_SEPARATOR);
-        int deadlineStart = byIndex + BY_SEPARATOR.length();
+        int descriptionStart = getArgumentStart(CommandType.DEADLINE);
+        int byIndex = command.indexOf(SEPARATOR_BY);
+        int deadlineStart = byIndex + SEPARATOR_BY.length();
         if (byIndex <= descriptionStart || deadlineStart >= command.length()
                 || command.substring(deadlineStart).isBlank()) {
-            throw invalidFormat(CommandType.DEADLINE);
+            throw createInvalidFormatException(CommandType.DEADLINE);
         }
         return new Deadline(command.substring(descriptionStart, byIndex),
                 command.substring(deadlineStart));
@@ -139,14 +139,14 @@ public class Parser {
     public static Event parseEvent(String rawCommand) {
         // Parsing logic authored with Codex.
         String command = rawCommand.trim();
-        int descriptionStart = startOfArgument(CommandType.EVENT);
-        int fromIndex = command.indexOf(FROM_SEPARATOR);
-        int toIndex = command.indexOf(TO_SEPARATOR, fromIndex);
-        int fromStart = fromIndex + FROM_SEPARATOR.length();
-        int toStart = toIndex + TO_SEPARATOR.length();
+        int descriptionStart = getArgumentStart(CommandType.EVENT);
+        int fromIndex = command.indexOf(SEPARATOR_FROM);
+        int toIndex = command.indexOf(SEPARATOR_TO, fromIndex);
+        int fromStart = fromIndex + SEPARATOR_FROM.length();
+        int toStart = toIndex + SEPARATOR_TO.length();
         if (fromIndex <= descriptionStart || toIndex <= fromStart
                 || toStart >= command.length() || command.substring(toStart).isBlank()) {
-            throw invalidFormat(CommandType.EVENT);
+            throw createInvalidFormatException(CommandType.EVENT);
         }
         return new Event(command.substring(descriptionStart, fromIndex),
                 command.substring(fromStart, toIndex), command.substring(toStart));
@@ -162,17 +162,17 @@ public class Parser {
      * @throws SerangoonerException If the number is missing or is not a number.
      */
     public static int parseTaskNumber(String command, CommandType commandType) {
-        String argument = argumentOf(command, commandType);
-        String label = commandType.name();
+        String argument = getArgument(command, commandType);
+        String commandName = commandType.name();
         if (argument.isEmpty()) {
-            throw new SerangoonerException(label + " FAILED. pls use format: "
+            throw new SerangoonerException(commandName + " FAILED. pls use format: "
                     + commandType.getSyntax());
         }
 
         try {
             return Integer.parseInt(argument);
         } catch (NumberFormatException exception) {
-            throw new SerangoonerException(label + " FAILED. pls give a valid task number", exception);
+            throw new SerangoonerException(commandName + " FAILED. pls give a valid task number", exception);
         }
     }
 
@@ -186,19 +186,19 @@ public class Parser {
      *         format, or the range ends before it starts.
      */
     public static DateRange parseDateRange(String command) {
-        String argument = argumentOf(command, CommandType.ON);
+        String argument = getArgument(command, CommandType.ON);
         if (argument.isEmpty()) {
             throw new SerangoonerException("pls give a date: " + CommandType.ON.getSyntax() + ". "
                     + TaskDateTime.FORMAT_HINT);
         }
 
-        int toIndex = argument.indexOf(TO_SEPARATOR);
+        int toIndex = argument.indexOf(SEPARATOR_TO);
         if (toIndex < 0) {
             LocalDate date = TaskDateTime.parseDate(argument);
             return new DateRange(date, date);
         }
         return new DateRange(TaskDateTime.parseDate(argument.substring(0, toIndex)),
-                TaskDateTime.parseDate(argument.substring(toIndex + TO_SEPARATOR.length())));
+                TaskDateTime.parseDate(argument.substring(toIndex + SEPARATOR_TO.length())));
     }
 
     /**
@@ -211,7 +211,7 @@ public class Parser {
      * @throws SerangoonerException If no keyword is given.
      */
     public static String parseKeyword(String command) {
-        String keyword = argumentOf(command, CommandType.FIND);
+        String keyword = getArgument(command, CommandType.FIND);
         if (keyword.isEmpty()) {
             throw new SerangoonerException("pls give me something to look for: "
                     + CommandType.FIND.getSyntax());
@@ -226,7 +226,7 @@ public class Parser {
      * @param commandType Command that the input was recognized as.
      * @return Argument of the command, or an empty string if none was given.
      */
-    private static String argumentOf(String command, CommandType commandType) {
+    private static String getArgument(String command, CommandType commandType) {
         String trimmed = command.trim();
         int keywordLength = commandType.getKeyword().length();
         return trimmed.length() > keywordLength ? trimmed.substring(keywordLength).trim() : "";
@@ -239,17 +239,17 @@ public class Parser {
      * @param commandType Command that the input was recognized as.
      * @return Index of the first character after the keyword and its space.
      */
-    private static int startOfArgument(CommandType commandType) {
+    private static int getArgumentStart(CommandType commandType) {
         return commandType.getKeyword().length() + 1;
     }
 
-    private static SerangoonerException invalidCommand() {
+    private static SerangoonerException createInvalidCommandException() {
         return new SerangoonerException(
                 "invalid command :/ if you don't know what you're doing, "
                         + "pls type 'help' for the command library .-.");
     }
 
-    private static SerangoonerException invalidFormat(CommandType commandType) {
+    private static SerangoonerException createInvalidFormatException(CommandType commandType) {
         return new SerangoonerException("INVALID. pls use format: " + commandType.getSyntax()
                 + ". " + TaskDateTime.FORMAT_HINT);
     }

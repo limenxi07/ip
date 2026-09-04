@@ -23,15 +23,15 @@ import serangooner.task.Todo;
  * rest of the list.
  */
 public class Storage {
-    private final Path file;
+    private final Path filePath;
 
     /**
      * Constructs storage backed by the given file.
      *
-     * @param file Relative path of the file that tasks are read from and written to.
+     * @param filePath Relative path of the file that tasks are read from and written to.
      */
-    public Storage(Path file) {
-        this.file = file;
+    public Storage(Path filePath) {
+        this.filePath = filePath;
     }
 
     /**
@@ -44,16 +44,16 @@ public class Storage {
      *         reason the file could not be read.
      */
     public LoadResult load() {
-        if (!Files.exists(file)) {
+        if (!Files.exists(filePath)) {
             return new LoadResult(new ArrayList<>(), 0, "");
         }
 
         List<String> lines;
         try {
-            lines = Files.readAllLines(file);
+            lines = Files.readAllLines(filePath);
         } catch (IOException exception) {
             return new LoadResult(new ArrayList<>(), 0,
-                    "couldn't read " + file + ", so we're starting fresh");
+                    "couldn't read " + filePath + ", so we're starting fresh");
         }
 
         List<Task> tasks = new ArrayList<>(lines.size());
@@ -81,13 +81,13 @@ public class Storage {
      */
     public void save(List<Task> tasks) {
         try {
-            Path parent = file.getParent();
+            Path parent = filePath.getParent();
             if (parent != null) {
                 Files.createDirectories(parent);
             }
-            Files.write(file, tasks.stream().map(Task::toSaveFormat).toList());
+            Files.write(filePath, tasks.stream().map(Task::toSaveFormat).toList());
         } catch (IOException exception) {
-            throw new SerangoonerException("couldn't save your list to " + file
+            throw new SerangoonerException("couldn't save your list to " + filePath
                     + " :( your change is only in memory", exception);
         }
     }
@@ -103,9 +103,9 @@ public class Storage {
     private static Optional<Task> parseTask(String line) {
         String[] fields = line.split(Pattern.quote(Task.SAVE_DELIMITER));
         return switch (fields[0]) {
-            case Todo.SAVE_CODE -> Todo.fromSaveFields(fields);
-            case Deadline.SAVE_CODE -> Deadline.fromSaveFields(fields);
-            case Event.SAVE_CODE -> Event.fromSaveFields(fields);
+            case Todo.SAVE_CODE -> Todo.parseSaveFields(fields);
+            case Deadline.SAVE_CODE -> Deadline.parseSaveFields(fields);
+            case Event.SAVE_CODE -> Event.parseSaveFields(fields);
             default -> Optional.empty();
         };
     }

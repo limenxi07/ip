@@ -129,8 +129,8 @@ public class TaskList {
     /**
      * Returns every task, each with the number it is known by.
      */
-    public List<Entry> entries() {
-        return entriesMatching(task -> true);
+    public List<Entry> getEntries() {
+        return filterEntries(task -> true);
     }
 
     /**
@@ -141,8 +141,8 @@ public class TaskList {
      * @param end Last date of the range, inclusive.
      * @return Matching tasks, in the order they are stored.
      */
-    public List<Entry> occurringOn(LocalDate start, LocalDate end) {
-        return entriesMatching(task -> task.isWithin(start, end));
+    public List<Entry> getEntriesWithin(LocalDate start, LocalDate end) {
+        return filterEntries(task -> task.isWithin(start, end));
     }
 
     /**
@@ -153,9 +153,9 @@ public class TaskList {
      * @param keyword Text to look for in each task description.
      * @return Matching tasks, in the order they are stored.
      */
-    public List<Entry> matching(String keyword) {
+    public List<Entry> getEntriesMatching(String keyword) {
         String lowerCaseKeyword = keyword.toLowerCase(Locale.ROOT);
-        return entriesMatching(task -> task.getDescription()
+        return filterEntries(task -> task.getDescription()
                 .toLowerCase(Locale.ROOT).contains(lowerCaseKeyword));
     }
 
@@ -167,7 +167,7 @@ public class TaskList {
      * @param filter Decides which tasks are returned.
      * @return Matching tasks, in the order they are stored.
      */
-    private List<Entry> entriesMatching(Predicate<Task> filter) {
+    private List<Entry> filterEntries(Predicate<Task> filter) {
         List<Entry> matches = new ArrayList<>();
         for (int i = 0; i < tasks.size(); i++) {
             Task task = tasks.get(i);
@@ -182,13 +182,13 @@ public class TaskList {
      * Returns the task at the given position.
      *
      * @param taskNumber Position of the task in the list, counting from one.
-     * @param label Name of the command, for use in the error message.
+     * @param commandName Name of the command, for use in the error message.
      * @return Task holding that position.
      * @throws SerangoonerException If no task holds that position.
      */
-    private Task getTask(int taskNumber, String label) {
+    private Task getTask(int taskNumber, String commandName) {
         if (taskNumber < 1 || taskNumber > tasks.size()) {
-            throw new SerangoonerException(label + " FAILED. task number must be between 1 and "
+            throw new SerangoonerException(commandName + " FAILED. task number must be between 1 and "
                     + tasks.size());
         }
         return tasks.get(taskNumber - 1);
