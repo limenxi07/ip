@@ -81,8 +81,8 @@ public class CommandTest {
         TaskList tasks = new TaskList();
         Storage storage = storageIn(directory);
 
-        assertThrows(SerangoonerException.class,
-                () -> new MarkCommand(1).execute(tasks, ui(), storage));
+        assertThrows(SerangoonerException.class, () ->
+                new MarkCommand(1).execute(tasks, ui(), storage));
         assertTrue(storage.load().tasks().isEmpty());
     }
 
@@ -209,8 +209,8 @@ public class CommandTest {
         TaskList tasks = new TaskList();
         Storage storage = storageIn(directory);
 
-        assertThrows(SerangoonerException.class,
-                () -> new UnmarkCommand(1).execute(tasks, ui(), storage));
+        assertThrows(SerangoonerException.class, () ->
+                new UnmarkCommand(1).execute(tasks, ui(), storage));
         assertTrue(storage.load().tasks().isEmpty());
     }
 
@@ -220,8 +220,8 @@ public class CommandTest {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
         Storage storage = storageIn(directory);
 
-        assertThrows(SerangoonerException.class,
-                () -> new DeleteCommand(2).execute(tasks, ui(), storage));
+        assertThrows(SerangoonerException.class, () ->
+                new DeleteCommand(2).execute(tasks, ui(), storage));
         assertEquals(1, tasks.size());
     }
 
@@ -314,8 +314,8 @@ public class CommandTest {
     public void execute_deleteCommandOutOfRange_saysNothingToTheUser(@TempDir Path directory) {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
 
-        assertThrows(SerangoonerException.class,
-                () -> new DeleteCommand(2).execute(tasks, ui(), storageIn(directory)));
+        assertThrows(SerangoonerException.class, () ->
+                new DeleteCommand(2).execute(tasks, ui(), storageIn(directory)));
 
         assertTrue(printed().isEmpty());
     }

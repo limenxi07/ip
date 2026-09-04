@@ -15,14 +15,14 @@ import serangooner.SerangoonerException;
 public class EventTest {
     @Test
     public void constructor_endBeforeStart_exceptionThrown() {
-        assertThrows(SerangoonerException.class,
-                () -> new Event("demo", "2026-09-05", "2026-09-04"));
+        assertThrows(SerangoonerException.class, () ->
+                new Event("demo", "2026-09-05", "2026-09-04"));
     }
 
     @Test
     public void constructor_endsBeforeStartOnTheSameDay_exceptionThrown() {
-        assertThrows(SerangoonerException.class,
-                () -> new Event("demo", "2026-09-05 1600", "2026-09-05 1400"));
+        assertThrows(SerangoonerException.class, () ->
+                new Event("demo", "2026-09-05 1600", "2026-09-05 1400"));
     }
 
     @Test
@@ -33,8 +33,8 @@ public class EventTest {
 
     @Test
     public void constructor_unreadableDate_exceptionThrown() {
-        assertThrows(SerangoonerException.class,
-                () -> new Event("demo", "sometime", "2026-09-05"));
+        assertThrows(SerangoonerException.class, () ->
+                new Event("demo", "sometime", "2026-09-05"));
     }
 
     @Test

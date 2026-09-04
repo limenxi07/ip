@@ -27,7 +27,7 @@ public class DateRangeTest {
 
     @Test
     public void constructor_endBeforeStart_exceptionThrown() {
-        assertThrows(SerangoonerException.class,
-                () -> new DateRange(LocalDate.of(2026, 9, 5), LocalDate.of(2026, 9, 1)));
+        assertThrows(SerangoonerException.class, () ->
+                new DateRange(LocalDate.of(2026, 9, 5), LocalDate.of(2026, 9, 1)));
     }
 }

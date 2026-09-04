@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import serangooner.command.AddCommand;
-import serangooner.command.Command;
 import serangooner.command.CommandType;
 import serangooner.command.DeleteCommand;
 import serangooner.command.ExitCommand;
@@ -119,8 +118,8 @@ public class ParserTest {
 
     @Test
     public void parseDeadline_unreadableDate_exceptionThrown() {
-        assertThrows(SerangoonerException.class,
-                () -> Parser.parseDeadline("deadline submit ip by tomorrow"));
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseDeadline("deadline submit ip by tomorrow"));
     }
 
     @Test
@@ -137,18 +136,18 @@ public class ParserTest {
 
     @Test
     public void parseEvent_missingParts_exceptionThrown() {
-        assertThrows(SerangoonerException.class,
-                () -> Parser.parseEvent("event orbital from 2026-09-03"));
-        assertThrows(SerangoonerException.class,
-                () -> Parser.parseEvent("event orbital to 2026-09-04"));
-        assertThrows(SerangoonerException.class,
-                () -> Parser.parseEvent("event from 2026-09-03 to 2026-09-04"));
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseEvent("event orbital from 2026-09-03"));
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseEvent("event orbital to 2026-09-04"));
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseEvent("event from 2026-09-03 to 2026-09-04"));
     }
 
     @Test
     public void parseEvent_endBeforeStart_exceptionThrown() {
-        assertThrows(SerangoonerException.class,
-                () -> Parser.parseEvent("event orbital from 2026-09-05 to 2026-09-01"));
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseEvent("event orbital from 2026-09-05 to 2026-09-01"));
     }
 
     @Test
@@ -170,14 +169,14 @@ public class ParserTest {
 
     @Test
     public void parseTaskNumber_missingNumber_exceptionThrown() {
-        assertThrows(SerangoonerException.class,
-                () -> Parser.parseTaskNumber("mark", CommandType.MARK));
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseTaskNumber("mark", CommandType.MARK));
     }
 
     @Test
     public void parseTaskNumber_notANumber_exceptionThrown() {
-        assertThrows(SerangoonerException.class,
-                () -> Parser.parseTaskNumber("mark abc", CommandType.MARK));
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseTaskNumber("mark abc", CommandType.MARK));
     }
 
     @Test
@@ -213,8 +212,8 @@ public class ParserTest {
 
     @Test
     public void parseDateRange_endBeforeStart_exceptionThrown() {
-        assertThrows(SerangoonerException.class,
-                () -> Parser.parseDateRange("on 2026-09-05 to 2026-09-01"));
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseDateRange("on 2026-09-05 to 2026-09-01"));
     }
 
 
@@ -250,20 +249,20 @@ public class ParserTest {
     public void parseDeadline_descriptionContainingTheSeparator_splitsAtTheFirstOne() {
         // "pay by phone by <date>" splits at the first " by ", leaving the rest
         // as the date, which then fails to parse. Pinned as known behaviour.
-        assertThrows(SerangoonerException.class,
-                () -> Parser.parseDeadline("deadline pay by phone by 2026-09-01"));
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseDeadline("deadline pay by phone by 2026-09-01"));
     }
 
     @Test
     public void parseDeadline_emptyDescription_exceptionThrown() {
-        assertThrows(SerangoonerException.class,
-                () -> Parser.parseDeadline("deadline  by 2026-09-01"));
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseDeadline("deadline  by 2026-09-01"));
     }
 
     @Test
     public void parseEvent_endSeparatorBeforeStartSeparator_exceptionThrown() {
-        assertThrows(SerangoonerException.class,
-                () -> Parser.parseEvent("event demo to 2026-09-04 from 2026-09-03"));
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseEvent("event demo to 2026-09-04 from 2026-09-03"));
     }
 
     @Test
@@ -280,8 +279,8 @@ public class ParserTest {
 
     @Test
     public void parseTaskNumber_numberTooLargeForAnInt_exceptionThrown() {
-        assertThrows(SerangoonerException.class,
-                () -> Parser.parseTaskNumber("mark 99999999999", CommandType.MARK));
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseTaskNumber("mark 99999999999", CommandType.MARK));
     }
 
     @Test

@@ -61,8 +61,8 @@ public class TaskDateTimeTest {
 
     @Test
     public void parse_unrecognizedFormat_messageQuotesInputAndGivesTheHint() {
-        SerangoonerException exception = assertThrows(SerangoonerException.class,
-                () -> TaskDateTime.parse("next tuesday"));
+        SerangoonerException exception = assertThrows(SerangoonerException.class, () ->
+                TaskDateTime.parse("next tuesday"));
         assertTrue(exception.getMessage().contains("next tuesday"));
         assertTrue(exception.getMessage().contains(TaskDateTime.FORMAT_HINT));
     }

@@ -30,8 +30,8 @@ public class TaskListTest {
     @Test
     public void getTasks_always_cannotBeEditedThrough() {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
-        assertThrows(UnsupportedOperationException.class,
-                () -> tasks.getTasks().add(new Todo("sneak in")));
+        assertThrows(UnsupportedOperationException.class, () ->
+                tasks.getTasks().add(new Todo("sneak in")));
     }
 
     @Test
@@ -295,7 +295,7 @@ public class TaskListTest {
     }
 
     @Test
-    public void delete_middleTask_thenUndo_putsItBackAtItsOldPosition() {
+    public void delete_middleTaskThenUndo_putsItBackAtItsOldPosition() {
         TaskList tasks = new TaskList(List.of(new Todo("first"), new Todo("second"),
                 new Todo("third")));
         tasks.delete(2);
