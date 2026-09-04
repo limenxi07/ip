@@ -30,8 +30,14 @@
   </module>
 
   <module name="LineLength">
-    <!-- Checks if a line is too long. -->
+    <!-- Checks that no line exceeds the hard limit. -->
     <property name="max" value="120"/>
+  </module>
+
+  <module name="LineLength">
+    <!-- Flags lines past the soft limit. A warning, so it advises without failing the build. -->
+    <property name="max" value="110"/>
+    <property name="severity" value="warning"/>
   </module>
 
   <!-- All Java AST specific tests live under TreeWalker module. -->
@@ -48,19 +54,19 @@
     IMPORT CHECKS
     -->
 
-    <!-- Checks the ordering of import statements follow the rules that the default Eclipse formatter uses.
-    The order rule "STATIC###STANDARD_JAVA_PACKAGE###SPECIAL_IMPORTS###THIRD_PARTY_PACKAGE" consists of:
-      1. STATIC: static imports
-      2. STANDARD_JAVA_PACKAGE: standard java/javax imports
-      3. SPECIAL_IMPORTS: defined as org imports
-      4. THIRD_PARTY_PACKAGE: defined as com imports
+    <!--
+      Checks that imports are grouped and ordered as the coding standard requires:
+      static, then java, javax, org, com, javafx, and finally this project's own
+      packages. Groups are separated by a blank line and sorted alphabetically
+      within themselves.
     -->
-    <module name="CustomImportOrder">
-        <property name="customImportOrderRules"
-            value="STATIC###STANDARD_JAVA_PACKAGE###SPECIAL_IMPORTS###THIRD_PARTY_PACKAGE"/>
-        <property name="specialImportsRegExp" value="^org\."/>
-        <property name="thirdPartyPackageRegExp" value="^com\."/>
-        <property name="sortImportsInGroupAlphabetically" value="true"/>
+    <module name="ImportOrder">
+        <property name="option" value="top"/>
+        <property name="groups"
+            value="/^java\./,/^javax\./,/^org\./,/^com\./,/^javafx\./,/^serangooner\./"/>
+        <property name="ordered" value="true"/>
+        <property name="separated" value="true"/>
+        <property name="sortStaticImportsAlphabetically" value="true"/>
     </module>
 
     <!-- Checks for redundant import statements.
@@ -92,13 +98,11 @@
     <module name="PackageName">
       <!-- Validates identifiers for package names against the supplied expression. -->
       <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]{1,})*$"/>
-      <property name="severity" value="warning"/>
     </module>
 
     <module name="TypeName">
       <!-- Validates static, final fields against the expression "^[A-Z][a-zA-Z0-9]*$". -->
       <metadata name="altname" value="TypeName"/>
-      <property name="severity" value="warning"/>
     </module>
 
     <module name="ConstantName">
@@ -107,21 +111,18 @@
       <property name="applyToPrivate" value="false"/>
       <message key="name.invalidPattern"
                value="Variable ''{0}'' should be in ALL_CAPS (if it is a constant) or be private (otherwise)."/>
-      <property name="severity" value="warning"/>
     </module>
 
     <module name="StaticVariableName">
       <!-- Validates static, non-final fields against the supplied expression. -->
       <metadata name="altname" value="StaticVariableName"/>
       <property name="format" value="^[a-z][a-zA-Z0-9]*_?$"/>
-      <property name="severity" value="warning"/>
     </module>
 
     <module name="MemberName">
       <!-- Validates non-static members against the supplied expression. -->
       <metadata name="altname" value="MemberName"/>
       <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
-      <property name="severity" value="warning"/>
     </module>
 
     <module name="MethodName">
@@ -132,17 +133,14 @@
 
     <module name="ParameterName">
       <!-- Validates identifiers for method parameters against the expression "^[a-z][a-zA-Z0-9]*$". -->
-      <property name="severity" value="warning"/>
     </module>
 
     <module name="LocalFinalVariableName">
       <!-- Validates identifiers for local final variables against the expression "^[a-z][a-zA-Z0-9]*$". -->
-      <property name="severity" value="warning"/>
     </module>
 
     <module name="LocalVariableName">
       <!-- Validates identifiers for local variables against the expression "^[a-z][a-zA-Z0-9]*$". -->
-      <property name="severity" value="warning"/>
     </module>
 
 
@@ -161,7 +159,6 @@
 
     <module name="LeftCurly">
       <!-- Checks for placement of the left curly brace ('{'). -->
-      <property name="severity" value="warning"/>
     </module>
 
     <module name="RightCurly">
@@ -181,7 +178,6 @@
         else
       </pre>
       -->
-      <property name="severity" value="warning"/>
     </module>
 
     <!-- Checks for braces around loop blocks -->
@@ -210,13 +206,9 @@
     <module name="UpperEll" />
 
     <module name="FallThrough">
-      <!-- Warn about falling through to the next case statement.  Similar to
-      javac -Xlint:fallthrough, but the check is suppressed if a single-line comment
-      on the last non-blank line preceding the fallen-into case contains 'fall through' (or
-      some other variants which we don't publicized to promote consistency).
-      -->
-      <property name="reliefPattern"
-       value="fall through|Fall through|fallthru|Fallthru|falls through|Falls through|fallthrough|Fallthrough|No break|NO break|no break|continue on"/>
+      <!-- Warns about falling through to the next case statement. The standard names one
+      accepted form of the excusing comment, so only that form is relieved here. -->
+      <property name="reliefPattern" value="Fallthrough"/>
     </module>
 
     <module name="MissingSwitchDefault"/>
@@ -359,7 +351,6 @@
 
     <module name="ParenPad">
       <!-- Checks that there is no whitespace before close parenthesis or after open parenthesis. -->
-      <property name="severity" value="warning"/>
     </module>
 
     <!-- Checks that non-whitespace characters are separated by no more than one whitespace character.
@@ -390,6 +381,9 @@
 
     <!-- Checks that Javadoc block tags appear only at the beginning of the line. -->
     <module name="JavadocBlockTagLocation"/>
+
+    <!-- Checks that a blank line separates the description from the @param block. -->
+    <module name="RequireEmptyLineBeforeBlockTagGroup"/>
 
     <!-- Checks that all Javadoc comments start from the second line. -->
     <module name="JavadocContentLocationCheck" />
@@ -422,7 +416,7 @@
 
     <!-- Checks that every public method (excluding getters, setters and constructors) has a header comment. -->
     <module name="MissingJavadocMethodCheck">
-      <property name="minLineCount" value="1"/>
+      <property name="minLineCount" value="0"/>
       <property name="allowMissingPropertyJavadoc" value="true"/>
       <property name="ignoreMethodNamesRegex" value="(set.*|get.*|main)"/>
     </module>
