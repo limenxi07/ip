@@ -1,6 +1,7 @@
 package serangooner.command;
 
 import serangooner.storage.Storage;
+import serangooner.task.Task;
 import serangooner.task.TaskList;
 import serangooner.ui.Ui;
 
@@ -20,8 +21,9 @@ public class DeleteCommand extends Command {
     }
 
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) {
-        ui.showTaskDeleted(tasks.delete(taskNumber));
+    public String execute(TaskList tasks, Ui ui, Storage storage) {
+        Task deletedTask = tasks.delete(taskNumber);
         storage.save(tasks.getTasks());
+        return ui.formatTaskDeleted(deletedTask);
     }
 }

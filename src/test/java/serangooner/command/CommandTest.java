@@ -5,11 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -26,30 +22,21 @@ import serangooner.task.Todo;
 import serangooner.ui.Ui;
 
 public class CommandTest {
-    private final ByteArrayOutputStream output = new ByteArrayOutputStream();
-
-    private Ui ui() {
-        return new Ui(new ByteArrayInputStream(new byte[0]),
-                new PrintStream(output, true, StandardCharsets.UTF_8));
-    }
+    private final Ui ui = new Ui();
 
     private static Storage storageIn(Path directory) {
         return new Storage(directory.resolve("tasks.txt"));
     }
 
-    private String printed() {
-        return output.toString(StandardCharsets.UTF_8);
-    }
-
     @Test
-    public void execute_addCommand_addsTaskShowsItAndSavesIt(@TempDir Path directory) {
+    public void execute_addCommand_addsTaskReportsItAndSavesIt(@TempDir Path directory) {
         TaskList tasks = new TaskList();
         Storage storage = storageIn(directory);
 
-        new AddCommand(new Todo("read book")).execute(tasks, ui(), storage);
+        String response = new AddCommand(new Todo("read book")).execute(tasks, ui, storage);
 
         assertEquals(1, tasks.size());
-        assertTrue(printed().startsWith("added todo: [T][ ] read book"));
+        assertTrue(response.startsWith("added todo: [T][ ] read book"));
         assertEquals(1, storage.load().tasks().size());
     }
 
@@ -58,7 +45,7 @@ public class CommandTest {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
         Storage storage = storageIn(directory);
 
-        new MarkCommand(1).execute(tasks, ui(), storage);
+        new MarkCommand(1).execute(tasks, ui, storage);
 
         assertTrue(tasks.getTasks().get(0).isDone());
         assertTrue(storage.load().tasks().get(0).isDone());
@@ -68,9 +55,9 @@ public class CommandTest {
     public void execute_unmarkCommand_marksTaskIncomplete(@TempDir Path directory) {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
         Storage storage = storageIn(directory);
-        new MarkCommand(1).execute(tasks, ui(), storage);
+        new MarkCommand(1).execute(tasks, ui, storage);
 
-        new UnmarkCommand(1).execute(tasks, ui(), storage);
+        new UnmarkCommand(1).execute(tasks, ui, storage);
 
         assertFalse(tasks.getTasks().get(0).isDone());
     }
@@ -82,7 +69,7 @@ public class CommandTest {
         Storage storage = storageIn(directory);
 
         assertThrows(SerangoonerException.class, () ->
-                new MarkCommand(1).execute(tasks, ui(), storage));
+                new MarkCommand(1).execute(tasks, ui, storage));
         assertTrue(storage.load().tasks().isEmpty());
     }
 
@@ -91,10 +78,10 @@ public class CommandTest {
         TaskList tasks = new TaskList(List.of(new Todo("read book"), new Todo("write essay")));
         Storage storage = storageIn(directory);
 
-        new DeleteCommand(1).execute(tasks, ui(), storage);
+        String response = new DeleteCommand(1).execute(tasks, ui, storage);
 
         assertEquals(1, tasks.size());
-        assertTrue(printed().startsWith("deleted task: [T][ ] read book"));
+        assertTrue(response.startsWith("deleted task: [T][ ] read book"));
         assertEquals(1, storage.load().tasks().size());
     }
 
@@ -102,9 +89,9 @@ public class CommandTest {
     public void execute_undoCommand_reversesTheLastChange(@TempDir Path directory) {
         TaskList tasks = new TaskList();
         Storage storage = storageIn(directory);
-        new AddCommand(new Todo("read book")).execute(tasks, ui(), storage);
+        new AddCommand(new Todo("read book")).execute(tasks, ui, storage);
 
-        new UndoCommand().execute(tasks, ui(), storage);
+        new UndoCommand().execute(tasks, ui, storage);
 
         assertEquals(0, tasks.size());
         assertTrue(storage.load().tasks().isEmpty());
@@ -112,17 +99,17 @@ public class CommandTest {
 
     @Test
     public void execute_undoCommandWithNothingToUndo_saysSo(@TempDir Path directory) {
-        new UndoCommand().execute(new TaskList(), ui(), storageIn(directory));
-        assertTrue(printed().startsWith("there's nothing to undo"));
+        String response = new UndoCommand().execute(new TaskList(), ui, storageIn(directory));
+        assertTrue(response.startsWith("there's nothing to undo"));
     }
 
     @Test
     public void execute_listCommand_showsEveryTask(@TempDir Path directory) {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
 
-        new ListCommand().execute(tasks, ui(), storageIn(directory));
+        String response = new ListCommand().execute(tasks, ui, storageIn(directory));
 
-        assertTrue(printed().contains(" 1. [T][ ] read book"));
+        assertTrue(response.contains(" 1. [T][ ] read book"));
     }
 
     @Test
@@ -131,27 +118,26 @@ public class CommandTest {
                 new Deadline("submit ip", "2026-09-01"),
                 new Deadline("submit tp", "2026-09-09")));
 
-        new OnCommand(Parser.parseDateRange("on 2026-09-01")).execute(tasks, ui(),
-                storageIn(directory));
+        String response = new OnCommand(Parser.parseDateRange("on 2026-09-01"))
+                .execute(tasks, ui, storageIn(directory));
 
-        assertTrue(printed().contains("submit ip"));
-        assertFalse(printed().contains("submit tp"));
+        assertTrue(response.contains("submit ip"));
+        assertFalse(response.contains("submit tp"));
     }
 
     @Test
     public void execute_helpCommand_listsEveryCommand(@TempDir Path directory) {
-        new HelpCommand().execute(new TaskList(), ui(), storageIn(directory));
+        String response = new HelpCommand().execute(new TaskList(), ui, storageIn(directory));
 
-        assertTrue(printed().startsWith("serangooner commands:"));
+        assertTrue(response.startsWith("serangooner commands:"));
         for (CommandType command : CommandType.values()) {
-            assertTrue(printed().contains(command.getSyntax() + " - " + command.getDescription()));
+            assertTrue(response.contains(command.getSyntax() + " - " + command.getDescription()));
         }
     }
 
     @Test
     public void execute_exitCommand_saysBye(@TempDir Path directory) {
-        new ExitCommand().execute(new TaskList(), ui(), storageIn(directory));
-        assertEquals("bye~" + System.lineSeparator(), printed());
+        assertEquals("bye~", new ExitCommand().execute(new TaskList(), ui, storageIn(directory)));
     }
 
     @Test
@@ -166,40 +152,39 @@ public class CommandTest {
         assertFalse(new UndoCommand().isExit());
     }
 
-
     @Test
     public void execute_addCommandOnNonEmptyList_appendsAndReportsTheNewCount(
             @TempDir Path directory) {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
         Storage storage = storageIn(directory);
 
-        new AddCommand(new Deadline("submit ip", "2026-09-01")).execute(tasks, ui(), storage);
+        String response = new AddCommand(new Deadline("submit ip", "2026-09-01"))
+                .execute(tasks, ui, storage);
 
         assertEquals(2, tasks.size());
         assertEquals("[D][ ] submit ip (by: 01 Sep 2026)",
                 tasks.getTasks().get(1).toString());
-        assertTrue(printed().contains("you now have 2 pending task(s)"));
+        assertTrue(response.contains("you now have 2 pending task(s)"));
     }
 
     @Test
     public void execute_markCommand_showsTheMarkedTask(@TempDir Path directory) {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
 
-        new MarkCommand(1).execute(tasks, ui(), storageIn(directory));
+        String response = new MarkCommand(1).execute(tasks, ui, storageIn(directory));
 
-        assertTrue(printed().startsWith("marked task as done: [T][\u2713] read book"));
+        assertTrue(response.startsWith("marked task as done: [T][✓] read book"));
     }
 
     @Test
     public void execute_unmarkCommand_showsTheTaskAndSavesIt(@TempDir Path directory) {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
         Storage storage = storageIn(directory);
-        new MarkCommand(1).execute(tasks, ui(), storage);
-        output.reset();
+        new MarkCommand(1).execute(tasks, ui, storage);
 
-        new UnmarkCommand(1).execute(tasks, ui(), storage);
+        String response = new UnmarkCommand(1).execute(tasks, ui, storage);
 
-        assertTrue(printed().startsWith("marked task as incomplete: [T][ ] read book"));
+        assertTrue(response.startsWith("marked task as incomplete: [T][ ] read book"));
         assertFalse(storage.load().tasks().get(0).isDone());
     }
 
@@ -210,7 +195,7 @@ public class CommandTest {
         Storage storage = storageIn(directory);
 
         assertThrows(SerangoonerException.class, () ->
-                new UnmarkCommand(1).execute(tasks, ui(), storage));
+                new UnmarkCommand(1).execute(tasks, ui, storage));
         assertTrue(storage.load().tasks().isEmpty());
     }
 
@@ -221,7 +206,7 @@ public class CommandTest {
         Storage storage = storageIn(directory);
 
         assertThrows(SerangoonerException.class, () ->
-                new DeleteCommand(2).execute(tasks, ui(), storage));
+                new DeleteCommand(2).execute(tasks, ui, storage));
         assertEquals(1, tasks.size());
     }
 
@@ -230,9 +215,9 @@ public class CommandTest {
             @TempDir Path directory) {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
         Storage storage = storageIn(directory);
-        new MarkCommand(1).execute(tasks, ui(), storage);
+        new MarkCommand(1).execute(tasks, ui, storage);
 
-        new UndoCommand().execute(tasks, ui(), storage);
+        new UndoCommand().execute(tasks, ui, storage);
 
         assertFalse(tasks.getTasks().get(0).isDone());
         assertFalse(storage.load().tasks().get(0).isDone());
@@ -243,9 +228,9 @@ public class CommandTest {
             @TempDir Path directory) {
         TaskList tasks = new TaskList(List.of(new Todo("read book"), new Todo("write essay")));
         Storage storage = storageIn(directory);
-        new DeleteCommand(1).execute(tasks, ui(), storage);
+        new DeleteCommand(1).execute(tasks, ui, storage);
 
-        new UndoCommand().execute(tasks, ui(), storage);
+        new UndoCommand().execute(tasks, ui, storage);
 
         assertEquals(2, tasks.size());
         assertEquals("[T][ ] read book", tasks.getTasks().get(0).toString());
@@ -254,19 +239,20 @@ public class CommandTest {
 
     @Test
     public void execute_listCommandOnEmptyList_saysThereIsNothing(@TempDir Path directory) {
-        new ListCommand().execute(new TaskList(), ui(), storageIn(directory));
-        assertFalse(printed().isBlank());
-        assertFalse(printed().contains(" 1. "));
+        String response = new ListCommand().execute(new TaskList(), ui, storageIn(directory));
+
+        assertFalse(response.isBlank());
+        assertFalse(response.contains(" 1. "));
     }
 
     @Test
     public void execute_onCommandMatchingNothing_saysSo(@TempDir Path directory) {
         TaskList tasks = new TaskList(List.of(new Deadline("submit ip", "2026-09-01")));
 
-        new OnCommand(Parser.parseDateRange("on 2026-10-01")).execute(tasks, ui(),
-                storageIn(directory));
+        String response = new OnCommand(Parser.parseDateRange("on 2026-10-01"))
+                .execute(tasks, ui, storageIn(directory));
 
-        assertFalse(printed().contains("submit ip"));
+        assertFalse(response.contains("submit ip"));
     }
 
     @Test
@@ -276,12 +262,12 @@ public class CommandTest {
                 new Deadline("submit tp", "2026-09-09"),
                 new Deadline("submit cp", "2026-10-01")));
 
-        new OnCommand(Parser.parseDateRange("on 2026-09-01 to 2026-09-09"))
-                .execute(tasks, ui(), storageIn(directory));
+        String response = new OnCommand(Parser.parseDateRange("on 2026-09-01 to 2026-09-09"))
+                .execute(tasks, ui, storageIn(directory));
 
-        assertTrue(printed().contains("submit ip"));
-        assertTrue(printed().contains("submit tp"));
-        assertFalse(printed().contains("submit cp"));
+        assertTrue(response.contains("submit ip"));
+        assertTrue(response.contains("submit tp"));
+        assertFalse(response.contains("submit cp"));
     }
 
     @Test
@@ -289,9 +275,9 @@ public class CommandTest {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
         Storage storage = storageIn(directory);
 
-        new ListCommand().execute(tasks, ui(), storage);
-        new HelpCommand().execute(tasks, ui(), storage);
-        new ExitCommand().execute(tasks, ui(), storage);
+        new ListCommand().execute(tasks, ui, storage);
+        new HelpCommand().execute(tasks, ui, storage);
+        new ExitCommand().execute(tasks, ui, storage);
 
         assertTrue(storage.load().tasks().isEmpty());
     }
@@ -305,19 +291,20 @@ public class CommandTest {
         TaskList tasks = new TaskList();
 
         assertThrows(SerangoonerException.class, () -> new AddCommand(new Todo("read book"))
-                .execute(tasks, ui(), new Storage(file)));
+                .execute(tasks, ui, new Storage(file)));
 
         assertEquals(1, tasks.size());
     }
 
     @Test
-    public void execute_deleteCommandOutOfRange_saysNothingToTheUser(@TempDir Path directory) {
+    public void execute_deleteCommandOutOfRange_exceptionCarriesAMessageForTheUser(
+            @TempDir Path directory) {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
 
-        assertThrows(SerangoonerException.class, () ->
-                new DeleteCommand(2).execute(tasks, ui(), storageIn(directory)));
+        SerangoonerException exception = assertThrows(SerangoonerException.class, () ->
+                new DeleteCommand(2).execute(tasks, ui, storageIn(directory)));
 
-        assertTrue(printed().isEmpty());
+        assertFalse(exception.getMessage().isBlank());
     }
 
     @Test
@@ -325,30 +312,30 @@ public class CommandTest {
         TaskList tasks = new TaskList(List.of(new Todo("read book"),
                 new Todo("write essay"), new Deadline("return book", "2026-09-01")));
 
-        new FindCommand("book").execute(tasks, ui(), storageIn(directory));
+        String response = new FindCommand("book").execute(tasks, ui, storageIn(directory));
 
-        assertTrue(printed().startsWith("matching tasks:"));
-        assertTrue(printed().contains("read book"));
-        assertTrue(printed().contains("return book"));
-        assertFalse(printed().contains("write essay"));
+        assertTrue(response.startsWith("matching tasks:"));
+        assertTrue(response.contains("read book"));
+        assertTrue(response.contains("return book"));
+        assertFalse(response.contains("write essay"));
     }
 
     @Test
     public void execute_findCommand_showsTheNumbersFromTheFullList(@TempDir Path directory) {
         TaskList tasks = new TaskList(List.of(new Todo("write essay"), new Todo("read book")));
 
-        new FindCommand("book").execute(tasks, ui(), storageIn(directory));
+        String response = new FindCommand("book").execute(tasks, ui, storageIn(directory));
 
-        assertTrue(printed().contains(" 2. [T][ ] read book"));
+        assertTrue(response.contains(" 2. [T][ ] read book"));
     }
 
     @Test
     public void execute_findCommandMatchingNothing_saysSo(@TempDir Path directory) {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
 
-        new FindCommand("essay").execute(tasks, ui(), storageIn(directory));
+        String response = new FindCommand("essay").execute(tasks, ui, storageIn(directory));
 
-        assertTrue(printed().startsWith("no task mentions 'essay'"));
+        assertTrue(response.startsWith("no task mentions 'essay'"));
     }
 
     @Test
@@ -356,7 +343,7 @@ public class CommandTest {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
         Storage storage = storageIn(directory);
 
-        new FindCommand("book").execute(tasks, ui(), storage);
+        new FindCommand("book").execute(tasks, ui, storage);
 
         assertTrue(storage.load().tasks().isEmpty());
     }

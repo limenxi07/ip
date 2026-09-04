@@ -9,7 +9,7 @@ import serangooner.ui.Ui;
  */
 public class ListCommand extends Command {
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) {
-        ui.showTasks(tasks.getEntries());
+    public String execute(TaskList tasks, Ui ui, Storage storage) {
+        return ui.formatTasks(tasks.getEntries());
     }
 }

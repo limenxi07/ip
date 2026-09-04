@@ -1,6 +1,7 @@
 package serangooner.command;
 
 import serangooner.storage.Storage;
+import serangooner.task.Task;
 import serangooner.task.TaskList;
 import serangooner.ui.Ui;
 
@@ -20,8 +21,9 @@ public class MarkCommand extends Command {
     }
 
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) {
-        ui.showTaskMarked(tasks.mark(taskNumber));
+    public String execute(TaskList tasks, Ui ui, Storage storage) {
+        Task markedTask = tasks.mark(taskNumber);
         storage.save(tasks.getTasks());
+        return ui.formatTaskMarked(markedTask);
     }
 }

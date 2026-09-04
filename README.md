@@ -28,6 +28,9 @@ you need java 25 or later. check yours with `java -version`.
 java -jar "serangooner.jar"
 ```
 
+that opens serangooner's chat window. type a command in the box at the
+bottom and press enter, or click send.
+
 serangooner keeps your tasks in `data/serangooner.txt` beside the jar, and
 makes that folder itself on the first save. run it from the same folder
 each time and your list will still be waiting.
@@ -46,6 +49,19 @@ serangooner without packaging it, run:
 ```bash
 ./gradlew run
 ```
+
+### talk to serangooner in a terminal
+
+serangooner answers on the command line as well as in a window, which is
+handy when you want to pipe a batch of commands in. name the command line
+version yourself and you get it instead of the window:
+
+```bash
+java -cp "serangooner.jar" serangooner.Serangooner
+```
+
+it understands exactly the same commands and shares the same
+`data/serangooner.txt`, so you can switch between the two whenever you like.
 
 enjoy talking to serangooner!
 

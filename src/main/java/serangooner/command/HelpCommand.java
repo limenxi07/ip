@@ -12,10 +12,10 @@ import serangooner.ui.Ui;
  */
 public class HelpCommand extends Command {
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) {
+    public String execute(TaskList tasks, Ui ui, Storage storage) {
         List<String> commands = Arrays.stream(CommandType.values())
                 .map(command -> command.getSyntax() + " - " + command.getDescription())
                 .toList();
-        ui.showHelp(commands);
+        return ui.formatHelp(commands);
     }
 }

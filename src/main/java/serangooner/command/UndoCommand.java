@@ -9,8 +9,9 @@ import serangooner.ui.Ui;
  */
 public class UndoCommand extends Command {
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) {
-        ui.showUndo(tasks.undo());
+    public String execute(TaskList tasks, Ui ui, Storage storage) {
+        boolean isUndone = tasks.undo();
         storage.save(tasks.getTasks());
+        return ui.formatUndo(isUndone);
     }
 }

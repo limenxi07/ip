@@ -148,4 +148,82 @@ public class SerangoonerTest {
     public void constructor_missingSaveFile_doesNotFail(@TempDir Path directory) {
         assertDoesNotThrow(() -> new Serangooner(directory.resolve("tasks.txt").toString()));
     }
+
+    @Test
+    public void getResponse_addCommand_addsTheTaskAndSaysSo(@TempDir Path directory) {
+        Serangooner serangooner = new Serangooner(directory.resolve("tasks.txt").toString());
+
+        Serangooner.Response response = serangooner.getResponse("todo read book");
+
+        assertTrue(response.text().startsWith("added todo: [T][ ] read book"));
+        assertFalse(response.isExit());
+        assertFalse(response.isError());
+    }
+
+    @Test
+    public void getResponse_severalLines_carriesTheListBetweenThem(@TempDir Path directory) {
+        Serangooner serangooner = new Serangooner(directory.resolve("tasks.txt").toString());
+
+        serangooner.getResponse("todo read book");
+        serangooner.getResponse("todo write essay");
+
+        assertTrue(serangooner.getResponse("list").text().contains(" 2. [T][ ] write essay"));
+    }
+
+    @Test
+    public void getResponse_unknownCommand_reportsAnErrorWithoutEndingTheConversation(
+            @TempDir Path directory) {
+        Serangooner serangooner = new Serangooner(directory.resolve("tasks.txt").toString());
+
+        Serangooner.Response response = serangooner.getResponse("bake a cake");
+
+        assertTrue(response.isError());
+        assertFalse(response.isExit());
+        assertFalse(response.text().isBlank());
+    }
+
+    @Test
+    public void getResponse_byeCommand_saysGoodbyeAndAsksToEnd(@TempDir Path directory) {
+        Serangooner serangooner = new Serangooner(directory.resolve("tasks.txt").toString());
+
+        Serangooner.Response response = serangooner.getResponse("bye");
+
+        assertEquals("bye~", response.text());
+        assertTrue(response.isExit());
+    }
+
+    @Test
+    public void getResponse_addCommand_reachesTheSaveFile(@TempDir Path directory)
+            throws IOException {
+        Path saveFile = directory.resolve("tasks.txt");
+
+        new Serangooner(saveFile.toString()).getResponse("todo read book");
+
+        assertEquals(List.of("T | 0 | read book"), Files.readAllLines(saveFile));
+    }
+
+    @Test
+    public void getGreeting_always_pointsToHelpAndBye(@TempDir Path directory) {
+        String greeting = new Serangooner(directory.resolve("tasks.txt").toString()).getGreeting();
+
+        assertTrue(greeting.contains("to see commands, type 'help'"));
+        assertTrue(greeting.contains("done? type 'bye' to exit :("));
+    }
+
+    @Test
+    public void getLoadReport_existingSaveFile_reportsWhatItRead(@TempDir Path directory)
+            throws IOException {
+        Path saveFile = directory.resolve("tasks.txt");
+        Files.write(saveFile, List.of("T | 0 | read book", "T | 1 | write essay"));
+
+        String report = new Serangooner(saveFile.toString()).getLoadReport();
+
+        assertEquals("loaded 2 task(s) from your last visit", report);
+    }
+
+    @Test
+    public void getLoadReport_missingSaveFile_saysNothing(@TempDir Path directory) {
+        assertEquals("",
+                new Serangooner(directory.resolve("tasks.txt").toString()).getLoadReport());
+    }
 }
