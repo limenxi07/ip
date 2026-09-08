@@ -27,7 +27,7 @@ public class Todo extends Task {
      */
     public static Optional<Task> parseSaveFields(String[] fields) {
         return buildFromSaveFields(fields, SAVE_FIELD_COUNT,
-                validFields -> new Todo(validFields[2]));
+                validFields -> new Todo(validFields[SAVE_INDEX_DESCRIPTION]));
     }
 
     @Override

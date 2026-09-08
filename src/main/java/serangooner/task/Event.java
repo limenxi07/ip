@@ -12,6 +12,8 @@ public class Event extends Task {
     /** Code identifying an event in the save file. */
     public static final String SAVE_CODE = "E";
     private static final int SAVE_FIELD_COUNT = 5;
+    private static final int SAVE_INDEX_START = 3;
+    private static final int SAVE_INDEX_END = 4;
 
     private final TaskDateTime startDateTime;
     private final TaskDateTime endDateTime;
@@ -42,7 +44,8 @@ public class Event extends Task {
      */
     public static Optional<Task> parseSaveFields(String[] fields) {
         return buildFromSaveFields(fields, SAVE_FIELD_COUNT,
-                validFields -> new Event(validFields[2], validFields[3], validFields[4]));
+                validFields -> new Event(validFields[SAVE_INDEX_DESCRIPTION],
+                        validFields[SAVE_INDEX_START], validFields[SAVE_INDEX_END]));
     }
 
     @Override
