@@ -85,6 +85,8 @@ public abstract class Task {
      */
     protected static boolean isOverlapping(TaskDateTime startDateTime, TaskDateTime endDateTime,
             LocalDate start, LocalDate end) {
+        assert !endDateTime.isBefore(startDateTime) : "a task cannot end before it starts";
+        assert !end.isBefore(start) : "a DateRange has already put the two dates in order";
         return !startDateTime.toLocalDate().isAfter(end)
                 && !endDateTime.toLocalDate().isBefore(start);
     }
@@ -102,6 +104,7 @@ public abstract class Task {
      */
     protected static Optional<Task> buildFromSaveFields(String[] fields, int fieldCount,
             Function<String[], Task> factory) {
+        assert fieldCount >= 2 : "a saved task carries at least a type code and a completion flag";
         if (fields.length != fieldCount) {
             return Optional.empty();
         }

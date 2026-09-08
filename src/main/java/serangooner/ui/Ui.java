@@ -73,6 +73,7 @@ public class Ui {
      * @param taskCount Number of tasks the list now holds.
      */
     public String formatTaskAdded(Task task, int taskCount) {
+        assert taskCount > 0 : "a list that has just gained a task cannot be empty";
         return joinLines("added " + task.getTypeName() + ": " + task,
                 "you now have " + taskCount + " pending task(s) :c");
     }

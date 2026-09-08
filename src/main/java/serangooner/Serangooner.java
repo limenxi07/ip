@@ -46,6 +46,8 @@ public class Serangooner {
         this.storage = new Storage(Path.of(filePath));
         this.loadResult = storage.load();
         this.tasks = new TaskList(loadResult.tasks());
+        assert tasks.size() == loadResult.tasks().size()
+                : "the list starts out holding exactly what was loaded";
     }
 
     /**

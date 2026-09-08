@@ -69,6 +69,8 @@ public class Storage {
                 skippedLineCount++;
             }
         }
+        assert tasks.size() + skippedLineCount <= lines.size()
+                : "every task read and every line skipped came from a line of the file";
         return new LoadResult(tasks, skippedLineCount, "");
     }
 
@@ -101,6 +103,7 @@ public class Storage {
      * @return Task the line describes, or nothing if it cannot be read.
      */
     private static Optional<Task> parseTask(String line) {
+        assert !line.isBlank() : "load() skips blank lines, so a line here can name a task type";
         String[] fields = line.split(Pattern.quote(Task.SAVE_DELIMITER));
         return switch (fields[0]) {
             case Todo.SAVE_CODE -> Todo.parseSaveFields(fields);
