@@ -137,6 +137,11 @@ public abstract class Task {
         return (isDone ? SAVE_DONE : SAVE_NOT_DONE) + SAVE_DELIMITER + description;
     }
 
+    /**
+     * Returns this task written the way it is shown to the user.
+     * Subclasses prepend their type tag and append their own dates, the same
+     * way they build on {@link #toSaveFormat()}.
+     */
     @Override
     public String toString() {
         return (isDone ? "[✓] " : "[ ] ") + description;

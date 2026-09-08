@@ -42,6 +42,6 @@ public class Todo extends Task {
 
     @Override
     public String toString() {
-        return "[T]" + (isDone() ? "[✓] " : "[ ] ") + getDescription();
+        return "[T]" + super.toString();
     }
 }
