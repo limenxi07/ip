@@ -119,10 +119,13 @@ public class Parser {
         int descriptionStart = getArgumentStart(CommandType.DEADLINE);
         int byIndex = command.indexOf(SEPARATOR_BY);
         int deadlineStart = byIndex + SEPARATOR_BY.length();
-        if (byIndex <= descriptionStart || deadlineStart >= command.length()
-                || command.substring(deadlineStart).isBlank()) {
+
+        boolean hasDescription = byIndex > descriptionStart;
+        boolean hasDeadline = isFollowedByText(command, deadlineStart);
+        if (!hasDescription || !hasDeadline) {
             throw createInvalidFormatException(CommandType.DEADLINE);
         }
+
         return new Deadline(command.substring(descriptionStart, byIndex),
                 command.substring(deadlineStart));
     }
@@ -144,10 +147,14 @@ public class Parser {
         int toIndex = command.indexOf(SEPARATOR_TO, fromIndex);
         int fromStart = fromIndex + SEPARATOR_FROM.length();
         int toStart = toIndex + SEPARATOR_TO.length();
-        if (fromIndex <= descriptionStart || toIndex <= fromStart
-                || toStart >= command.length() || command.substring(toStart).isBlank()) {
+
+        boolean hasDescription = fromIndex > descriptionStart;
+        boolean hasStart = toIndex > fromStart;
+        boolean hasEnd = isFollowedByText(command, toStart);
+        if (!hasDescription || !hasStart || !hasEnd) {
             throw createInvalidFormatException(CommandType.EVENT);
         }
+
         return new Event(command.substring(descriptionStart, fromIndex),
                 command.substring(fromStart, toIndex), command.substring(toStart));
     }
@@ -241,6 +248,19 @@ public class Parser {
      */
     private static int getArgumentStart(CommandType commandType) {
         return commandType.getKeyword().length() + 1;
+    }
+
+    /**
+     * Returns whether the given command carries anything other than space
+     * from the given position onwards.
+     *
+     * @param command Line of input entered by the user, trimmed.
+     * @param start Position just past a separator, which may be past the end
+     *         of the line when that separator was never found.
+     * @return True if a value follows the separator.
+     */
+    private static boolean isFollowedByText(String command, int start) {
+        return start < command.length() && !command.substring(start).isBlank();
     }
 
     private static SerangoonerException createInvalidCommandException() {
