@@ -44,6 +44,9 @@ dependencies {
 test {
     useJUnitPlatform()
 
+    // Assertions document assumptions, so they must be checked while the tests run.
+    enableAssertions = true
+
     testLogging {
         events 'passed', 'skipped', 'failed'
 
@@ -58,6 +61,8 @@ test {
 application {
     // The launcher, rather than the JavaFX Application itself, to work around a classpath issue.
     mainClass = 'serangooner.gui.Launcher'
+    // Assertions are off unless asked for, so ask for them whenever the program is run from Gradle.
+    applicationDefaultJvmArgs = ['-ea']
 }
 
 jar {

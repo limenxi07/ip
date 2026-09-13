@@ -65,8 +65,10 @@ public class TaskList {
      * @return Task that was added.
      */
     public Task add(Task task) {
+        int taskCountBefore = tasks.size();
         tasks.add(task);
         undoActions.push(() -> tasks.remove(task));
+        assert tasks.size() == taskCountBefore + 1 : "adding must leave exactly one more task";
         return task;
     }
 
@@ -81,6 +83,7 @@ public class TaskList {
         Task task = getTask(taskNumber, "MARK");
         boolean wasDone = task.isDone();
         task.markDone();
+        assert task.isDone() : "a task that was just marked must read as done";
         undoActions.push(() -> setDone(task, wasDone));
         return task;
     }
@@ -96,6 +99,7 @@ public class TaskList {
         Task task = getTask(taskNumber, "UNMARK");
         boolean wasDone = task.isDone();
         task.markNotDone();
+        assert !task.isDone() : "a task that was just unmarked must read as incomplete";
         undoActions.push(() -> setDone(task, wasDone));
         return task;
     }
@@ -109,8 +113,10 @@ public class TaskList {
      */
     public Task delete(int taskNumber) {
         Task task = getTask(taskNumber, "DELETE");
+        int taskCountBefore = tasks.size();
         tasks.remove(taskNumber - 1);
         undoActions.push(() -> tasks.add(taskNumber - 1, task));
+        assert tasks.size() == taskCountBefore - 1 : "deleting must remove exactly one task";
         return task;
     }
 
@@ -143,6 +149,7 @@ public class TaskList {
      * @return Matching tasks, in the order they are stored.
      */
     public List<Entry> getEntriesWithin(LocalDate start, LocalDate end) {
+        assert !end.isBefore(start) : "a DateRange has already put the two dates in order";
         return filterEntries(task -> task.isWithin(start, end));
     }
 
@@ -169,10 +176,12 @@ public class TaskList {
      * @return Matching tasks, in the order they are stored.
      */
     private List<Entry> filterEntries(Predicate<Task> filter) {
-        return IntStream.rangeClosed(1, tasks.size())
+        List<Entry> matches = IntStream.rangeClosed(1, tasks.size())
                 .mapToObj(number -> new Entry(number, tasks.get(number - 1)))
                 .filter(entry -> filter.test(entry.task()))
                 .toList();
+        assert matches.size() <= tasks.size() : "a filtered listing cannot outgrow the list";
+        return matches;
     }
 
     /**

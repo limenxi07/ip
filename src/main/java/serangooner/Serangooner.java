@@ -46,6 +46,8 @@ public class Serangooner {
         this.storage = new Storage(Path.of(filePath));
         this.loadResult = storage.load();
         this.tasks = new TaskList(loadResult.tasks());
+        assert tasks.size() == loadResult.tasks().size()
+                : "the list starts out holding exactly what was loaded";
     }
 
     /**
@@ -95,16 +97,26 @@ public class Serangooner {
         boolean isExit = false;
         while (!isExit && console.hasNextCommand()) {
             Response response = getResponse(console.readCommand());
-
-            if (response.isError()) {
-                console.showError(response.text());
-            } else {
-                console.show(response.text());
-            }
-            console.showDivider();
-
+            show(console, response);
             isExit = response.isExit();
         }
+    }
+
+    /**
+     * Shows one reply on the console, framed by a divider.
+     * A refused command is shown as an error, which the console answers with
+     * a sound of its own.
+     *
+     * @param console Console to show the reply on.
+     * @param response Reply to show.
+     */
+    private static void show(Console console, Response response) {
+        if (response.isError()) {
+            console.showError(response.text());
+        } else {
+            console.show(response.text());
+        }
+        console.showDivider();
     }
 
     /**

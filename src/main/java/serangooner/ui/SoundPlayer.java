@@ -36,7 +36,10 @@ public class SoundPlayer {
         Thread.ofVirtual().start(() -> {
             try {
                 new ProcessBuilder("afplay", SOUND_FILE.toString()).start().waitFor();
-            } catch (IOException | InterruptedException exception) {
+            } catch (IOException exception) {
+                // No player to run the file, which is no reason to trouble the user.
+            } catch (InterruptedException exception) {
+                // Leave the flag set, so that whoever interrupted this thread still sees it.
                 Thread.currentThread().interrupt();
             }
         });

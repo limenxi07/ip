@@ -12,6 +12,7 @@ public class Deadline extends Task {
     /** Code identifying a deadline in the save file. */
     public static final String SAVE_CODE = "D";
     private static final int SAVE_FIELD_COUNT = 4;
+    private static final int SAVE_INDEX_DEADLINE = 3;
 
     private final TaskDateTime deadline;
 
@@ -35,7 +36,8 @@ public class Deadline extends Task {
      */
     public static Optional<Task> parseSaveFields(String[] fields) {
         return buildFromSaveFields(fields, SAVE_FIELD_COUNT,
-                validFields -> new Deadline(validFields[2], validFields[3]));
+                validFields -> new Deadline(validFields[SAVE_INDEX_DESCRIPTION],
+                        validFields[SAVE_INDEX_DEADLINE]));
     }
 
     @Override
@@ -56,7 +58,6 @@ public class Deadline extends Task {
 
     @Override
     public String toString() {
-        return "[D]" + (isDone() ? "[✓] " : "[ ] ")
-                + getDescription() + " (by: " + deadline + ")";
+        return "[D]" + super.toString() + " (by: " + deadline + ")";
     }
 }
