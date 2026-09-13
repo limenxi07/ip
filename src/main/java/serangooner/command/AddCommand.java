@@ -19,6 +19,7 @@ public class AddCommand extends Command {
      * @param task Task to add, already built from what the user typed.
      */
     public AddCommand(Task task) {
+        assert task != null : "the parser builds the task before it builds this command";
         this.task = task;
     }
 

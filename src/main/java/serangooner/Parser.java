@@ -55,7 +55,7 @@ public class Parser {
      */
     public static Command parse(String fullCommand) {
         CommandType commandType = parseCommandType(fullCommand);
-        return switch (commandType) {
+        Command command = switch (commandType) {
             case TODO -> new AddCommand(parseTodo(fullCommand));
             case DEADLINE -> new AddCommand(parseDeadline(fullCommand));
             case EVENT -> new AddCommand(parseEvent(fullCommand));
@@ -69,6 +69,8 @@ public class Parser {
             case HELP -> new HelpCommand();
             case BYE -> new ExitCommand();
         };
+        assert command != null : "every command type must map to a command";
+        return command;
     }
 
     /**
@@ -125,6 +127,8 @@ public class Parser {
         if (!hasDescription || !hasDeadline) {
             throw createInvalidFormatException(CommandType.DEADLINE);
         }
+        assert descriptionStart < byIndex && deadlineStart < command.length()
+                : "the checks above leave both substring ranges well formed";
 
         return new Deadline(command.substring(descriptionStart, byIndex),
                 command.substring(deadlineStart));
@@ -154,6 +158,8 @@ public class Parser {
         if (!hasDescription || !hasStart || !hasEnd) {
             throw createInvalidFormatException(CommandType.EVENT);
         }
+        assert descriptionStart < fromIndex && fromStart < toIndex && toStart < command.length()
+                : "the checks above leave all three substring ranges well formed";
 
         return new Event(command.substring(descriptionStart, fromIndex),
                 command.substring(fromStart, toIndex), command.substring(toStart));
@@ -235,6 +241,8 @@ public class Parser {
      */
     private static String getArgument(String command, CommandType commandType) {
         String trimmed = command.trim();
+        assert trimmed.startsWith(commandType.getKeyword())
+                : "the argument is cut off past a keyword that was already matched";
         int keywordLength = commandType.getKeyword().length();
         return trimmed.length() > keywordLength ? trimmed.substring(keywordLength).trim() : "";
     }
