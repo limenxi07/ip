@@ -2,6 +2,9 @@ package serangooner.ui;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import serangooner.storage.Storage;
 import serangooner.task.Task;
@@ -16,6 +19,8 @@ import serangooner.task.TaskList;
  * words while each decides for itself how they are presented.
  */
 public class Ui {
+    private static final String HELP_HEADING = "serangooner commands:";
+
     /**
      * Returns the greeting that opens a conversation.
      */
@@ -55,15 +60,11 @@ public class Ui {
      * @param commands Descriptions to list, in the order they should be shown.
      */
     public String formatHelp(List<String> commands) {
-        StringBuilder output = new StringBuilder("serangooner commands:");
-        int commandNumber = 1;
-        for (String command : commands) {
-            output.append(System.lineSeparator())
-                    .append(commandNumber++)
-                    .append(". ")
-                    .append(command);
-        }
-        return output.append(System.lineSeparator()).append(TaskDateTime.FORMAT_HINT).toString();
+        Stream<String> numberedCommands = IntStream.rangeClosed(1, commands.size())
+                .mapToObj(number -> number + ". " + commands.get(number - 1));
+        Stream<String> listing = Stream.concat(Stream.of(HELP_HEADING), numberedCommands);
+        return Stream.concat(listing, Stream.of(TaskDateTime.FORMAT_HINT))
+                .collect(Collectors.joining(System.lineSeparator()));
     }
 
     /**
@@ -168,15 +169,10 @@ public class Ui {
             return emptyMessage;
         }
 
-        StringBuilder output = new StringBuilder(heading);
-        for (TaskList.Entry entry : entries) {
-            output.append(System.lineSeparator())
-                    .append(" ")
-                    .append(entry.number())
-                    .append(". ")
-                    .append(entry.task());
-        }
-        return output.toString();
+        Stream<String> lines = entries.stream()
+                .map(entry -> " " + entry.number() + ". " + entry.task());
+        return Stream.concat(Stream.of(heading), lines)
+                .collect(Collectors.joining(System.lineSeparator()));
     }
 
     /**
