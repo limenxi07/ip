@@ -1,6 +1,7 @@
 package serangooner.task;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -105,10 +106,8 @@ public abstract class Task {
         if (fields.length != fieldCount) {
             return Optional.empty();
         }
-        for (String field : fields) {
-            if (field.isBlank()) {
-                return Optional.empty();
-            }
+        if (Arrays.stream(fields).anyMatch(String::isBlank)) {
+            return Optional.empty();
         }
         boolean isDone = SAVE_DONE.equals(fields[1]);
         if (!isDone && !SAVE_NOT_DONE.equals(fields[1])) {
