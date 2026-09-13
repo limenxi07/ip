@@ -1,5 +1,7 @@
 # serangooner
 
+[![Java CI](https://github.com/limenxi07/ip/actions/workflows/gradle.yml/badge.svg)](https://github.com/limenxi07/ip/actions/workflows/gradle.yml)
+
 ```text
   ____   U _____ u   ____        _      _   _     ____    U  ___ u   U  ___ u  _   _   U _____ u   ____     
  / __"| u\| ___"|/U |  _"\ u U  /"\  u | \ |"| U /"___|u   \/"_ \/    \/"_ \/ | \ |"|  \| ___"|/U |  _"\ u  
