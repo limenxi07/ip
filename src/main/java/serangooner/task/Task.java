@@ -111,7 +111,7 @@ public abstract class Task {
      */
     protected static Optional<Task> buildFromSaveFields(String[] fields, int fieldCount,
             Function<String[], Task> factory) {
-        assert fieldCount >= 2 : "a saved task carries at least a type code and a completion flag";
+        assert fieldCount > SAVE_INDEX_DONE : "the completion flag must lie within a saved task's fields";
         if (fields.length != fieldCount) {
             return Optional.empty();
         }
