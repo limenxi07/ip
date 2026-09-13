@@ -8,6 +8,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
+import java.util.stream.IntStream;
 
 import serangooner.SerangoonerException;
 
@@ -175,13 +176,10 @@ public class TaskList {
      * @return Matching tasks, in the order they are stored.
      */
     private List<Entry> filterEntries(Predicate<Task> filter) {
-        List<Entry> matches = new ArrayList<>();
-        for (int i = 0; i < tasks.size(); i++) {
-            Task task = tasks.get(i);
-            if (filter.test(task)) {
-                matches.add(new Entry(i + 1, task));
-            }
-        }
+        List<Entry> matches = IntStream.rangeClosed(1, tasks.size())
+                .mapToObj(number -> new Entry(number, tasks.get(number - 1)))
+                .filter(entry -> filter.test(entry.task()))
+                .toList();
         assert matches.size() <= tasks.size() : "a filtered listing cannot outgrow the list";
         return matches;
     }

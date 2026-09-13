@@ -3,7 +3,6 @@ package serangooner.storage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -45,32 +44,26 @@ public class Storage {
      */
     public LoadResult load() {
         if (!Files.exists(filePath)) {
-            return new LoadResult(new ArrayList<>(), 0, "");
+            return new LoadResult(List.of(), 0, "");
         }
 
         List<String> lines;
         try {
             lines = Files.readAllLines(filePath);
         } catch (IOException exception) {
-            return new LoadResult(new ArrayList<>(), 0,
+            return new LoadResult(List.of(), 0,
                     "couldn't read " + filePath + ", so we're starting fresh");
         }
 
-        List<Task> tasks = new ArrayList<>(lines.size());
-        int skippedLineCount = 0;
-        for (String line : lines) {
-            if (line.isBlank()) {
-                continue;
-            }
-            Optional<Task> task = parseTask(line);
-            if (task.isPresent()) {
-                tasks.add(task.get());
-            } else {
-                skippedLineCount++;
-            }
-        }
-        assert tasks.size() + skippedLineCount <= lines.size()
-                : "every task read and every line skipped came from a line of the file";
+        List<String> taskLines = lines.stream()
+                .filter(line -> !line.isBlank())
+                .toList();
+        List<Task> tasks = taskLines.stream()
+                .map(Storage::parseTask)
+                .flatMap(Optional::stream)
+                .toList();
+        int skippedLineCount = taskLines.size() - tasks.size();
+        assert skippedLineCount >= 0 : "a line of the file yields at most one task";
         return new LoadResult(tasks, skippedLineCount, "");
     }
 
