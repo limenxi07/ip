@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Locale;
+import java.util.Objects;
 
 import serangooner.SerangoonerException;
 
@@ -110,6 +111,23 @@ public class TaskDateTime {
      */
     public String toSaveFormat() {
         return dateTime.format(hasTime ? INPUT_DATE_TIME : INPUT_DATE);
+    }
+
+    /**
+     * Returns whether the given object is the same point in time, given the same way.
+     * A bare date and that date at midnight are shown to the user differently,
+     * so they are not equal even though they fall at the same moment.
+     */
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof TaskDateTime otherDateTime
+                && dateTime.equals(otherDateTime.dateTime)
+                && hasTime == otherDateTime.hasTime;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(dateTime, hasTime);
     }
 
     @Override

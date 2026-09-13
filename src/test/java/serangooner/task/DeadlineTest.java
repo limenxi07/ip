@@ -114,4 +114,31 @@ public class DeadlineTest {
         assertTrue(Deadline.parseSaveFields(
                 new String[] {"D", "0", "  ", "2026-09-01"}).isEmpty());
     }
+
+    @Test
+    public void isDuplicateOf_sameDescriptionAndDate_returnsTrue() {
+        assertTrue(new Deadline("Submit IP", "2026-09-01")
+                .isDuplicateOf(new Deadline("submit ip", "2026-09-01")));
+    }
+
+    @Test
+    public void isDuplicateOf_differentDate_returnsFalse() {
+        assertFalse(new Deadline("submit ip", "2026-09-01")
+                .isDuplicateOf(new Deadline("submit ip", "2026-09-02")));
+    }
+
+    @Test
+    public void isDuplicateOf_bareDateAgainstMidnight_returnsFalse() {
+        // The two are shown to the user differently, so they are not the same deadline.
+        assertFalse(new Deadline("submit ip", "2026-09-01")
+                .isDuplicateOf(new Deadline("submit ip", "2026-09-01 0000")));
+    }
+
+    @Test
+    public void isDuplicateOf_todoWithTheSameDescription_returnsFalse() {
+        Deadline deadline = new Deadline("submit ip", "2026-09-01");
+        Todo todo = new Todo("submit ip");
+        assertFalse(deadline.isDuplicateOf(todo));
+        assertFalse(todo.isDuplicateOf(deadline));
+    }
 }

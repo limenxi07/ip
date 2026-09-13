@@ -58,6 +58,18 @@ public class Event extends Task {
         return isOverlapping(startDateTime, endDateTime, start, end);
     }
 
+    /**
+     * {@inheritDoc}
+     * An event must also start and end at the same times.
+     */
+    @Override
+    public boolean isDuplicateOf(Task other) {
+        return other instanceof Event otherEvent
+                && super.isDuplicateOf(other)
+                && startDateTime.equals(otherEvent.startDateTime)
+                && endDateTime.equals(otherEvent.endDateTime);
+    }
+
     @Override
     public String toSaveFormat() {
         return SAVE_CODE + SAVE_DELIMITER + super.toSaveFormat()

@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
@@ -60,11 +61,21 @@ public class TaskList {
 
     /**
      * Adds the given task to the end of the list.
+     * A task that duplicates one already in the list is refused, so that the
+     * same task is never entered twice by mistake. The tasks a list starts out
+     * with are taken as they are, without being checked against each other.
      *
      * @param task Task to add.
      * @return Task that was added.
+     * @throws SerangoonerException If the list already holds a duplicate of the task.
      */
     public Task add(Task task) {
+        Optional<Entry> duplicate = findDuplicate(task);
+        if (duplicate.isPresent()) {
+            throw new SerangoonerException("ADD FAILED. you already have that as task "
+                    + duplicate.get().number() + ": " + duplicate.get().task());
+        }
+
         int taskCountBefore = tasks.size();
         tasks.add(task);
         undoActions.push(() -> tasks.remove(task));
@@ -165,6 +176,17 @@ public class TaskList {
         String lowerCaseKeyword = keyword.toLowerCase(Locale.ROOT);
         return filterEntries(task -> task.getDescription()
                 .toLowerCase(Locale.ROOT).contains(lowerCaseKeyword));
+    }
+
+    /**
+     * Returns the first task in the list that duplicates the given one, with
+     * the number it is known by.
+     *
+     * @param task Task to look for a duplicate of.
+     * @return Duplicate already in the list, or nothing if the task is new.
+     */
+    private Optional<Entry> findDuplicate(Task task) {
+        return filterEntries(task::isDuplicateOf).stream().findFirst();
     }
 
     /**

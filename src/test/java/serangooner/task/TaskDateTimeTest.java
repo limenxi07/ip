@@ -2,6 +2,7 @@ package serangooner.task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -137,5 +138,23 @@ public class TaskDateTimeTest {
     @Test
     public void parseDate_unreadableText_exceptionThrown() {
         assertThrows(SerangoonerException.class, () -> TaskDateTime.parseDate("whenever"));
+    }
+
+    @Test
+    public void equals_sameTextParsedTwice_returnsTrueWithMatchingHashCodes() {
+        TaskDateTime first = TaskDateTime.parse("2026-09-01 1800");
+        TaskDateTime second = TaskDateTime.parse(" 2026-09-01 1800 ");
+        assertEquals(first, second);
+        assertEquals(first.hashCode(), second.hashCode());
+    }
+
+    @Test
+    public void equals_bareDateAgainstThatDateAtMidnight_returnsFalse() {
+        assertNotEquals(TaskDateTime.parse("2026-09-01"), TaskDateTime.parse("2026-09-01 0000"));
+    }
+
+    @Test
+    public void equals_differentTimesOnTheSameDay_returnsFalse() {
+        assertNotEquals(TaskDateTime.parse("2026-09-01 1800"), TaskDateTime.parse("2026-09-01 1900"));
     }
 }

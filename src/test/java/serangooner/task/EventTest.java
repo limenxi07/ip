@@ -123,4 +123,28 @@ public class EventTest {
         Task event = new Event("demo", "2026-09-05", "2026-09-05");
         assertTrue(event.isWithin(LocalDate.of(2026, 9, 5), LocalDate.of(2026, 9, 5)));
     }
+
+    @Test
+    public void isDuplicateOf_sameDescriptionAndTimes_returnsTrue() {
+        assertTrue(new Event("Orbital", "2026-09-03", "2026-09-04")
+                .isDuplicateOf(new Event("orbital", "2026-09-03", "2026-09-04")));
+    }
+
+    @Test
+    public void isDuplicateOf_differentStart_returnsFalse() {
+        assertFalse(new Event("orbital", "2026-09-03", "2026-09-04")
+                .isDuplicateOf(new Event("orbital", "2026-09-02", "2026-09-04")));
+    }
+
+    @Test
+    public void isDuplicateOf_differentEnd_returnsFalse() {
+        assertFalse(new Event("orbital", "2026-09-03", "2026-09-04")
+                .isDuplicateOf(new Event("orbital", "2026-09-03", "2026-09-05")));
+    }
+
+    @Test
+    public void isDuplicateOf_deadlineWithTheSameDescriptionAndStart_returnsFalse() {
+        assertFalse(new Event("orbital", "2026-09-03", "2026-09-03")
+                .isDuplicateOf(new Deadline("orbital", "2026-09-03")));
+    }
 }

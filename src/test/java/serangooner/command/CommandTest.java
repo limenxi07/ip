@@ -352,4 +352,18 @@ public class CommandTest {
     public void isExit_findCommand_returnsFalse() {
         assertFalse(new FindCommand("book").isExit());
     }
+
+    @Test
+    public void execute_addCommandForADuplicate_exceptionThrownAndNothingSaved(
+            @TempDir Path directory) {
+        TaskList tasks = new TaskList();
+        Storage storage = storageIn(directory);
+        new AddCommand(new Todo("read book")).execute(tasks, ui, storage);
+
+        assertThrows(SerangoonerException.class, () ->
+                new AddCommand(new Todo("Read Book")).execute(tasks, ui, storage));
+
+        assertEquals(1, tasks.size());
+        assertEquals(1, storage.load().tasks().size());
+    }
 }

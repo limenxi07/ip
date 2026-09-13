@@ -86,4 +86,27 @@ public class TaskTest {
         task.markDone();
         assertEquals("[✓] read book", task.toString());
     }
+
+    @Test
+    public void isDuplicateOf_sameDescriptionInAnotherCaseAndSpacing_returnsTrue() {
+        assertTrue(new PlainTask("  Read   Book ").isDuplicateOf(new PlainTask("read book")));
+    }
+
+    @Test
+    public void isDuplicateOf_differentDescription_returnsFalse() {
+        assertFalse(new PlainTask("read book").isDuplicateOf(new PlainTask("read books")));
+    }
+
+    @Test
+    public void isDuplicateOf_onlyOneOfThemDone_stillReturnsTrue() {
+        Task doneTask = new PlainTask("read book");
+        doneTask.markDone();
+        assertTrue(doneTask.isDuplicateOf(new PlainTask("read book")));
+    }
+
+    @Test
+    public void isDuplicateOf_sameDescriptionButAnotherKind_returnsFalse() {
+        assertFalse(new PlainTask("read book").isDuplicateOf(new Todo("read book")));
+        assertFalse(new Todo("read book").isDuplicateOf(new PlainTask("read book")));
+    }
 }

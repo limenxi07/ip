@@ -308,20 +308,6 @@ public class TaskListTest {
     }
 
     @Test
-    public void add_twoTasksReadingAlike_undoRemovesOnlyTheOneJustAdded() {
-        TaskList tasks = new TaskList();
-        Todo first = new Todo("read book");
-        Todo second = new Todo("read book");
-        tasks.add(first);
-        tasks.add(second);
-
-        assertTrue(tasks.undo());
-
-        assertEquals(1, tasks.size());
-        assertSame(first, tasks.getTasks().get(0));
-    }
-
-    @Test
     public void getEntriesMatching_keywordInSomeDescriptions_returnsOnlyThoseTasks() {
         TaskList tasks = new TaskList(List.of(new Todo("read book"),
                 new Todo("write essay"), new Todo("return book")));
@@ -388,5 +374,53 @@ public class TaskListTest {
         tasks.getEntriesMatching("book");
         assertEquals(1, tasks.size());
         assertFalse(tasks.undo());
+    }
+
+    @Test
+    public void add_duplicateOfAnExistingTask_exceptionThrownNamingIt() {
+        TaskList tasks = new TaskList(List.of(new Todo("write essay"), new Todo("read book")));
+
+        SerangoonerException exception = assertThrows(SerangoonerException.class, () ->
+                tasks.add(new Todo("Read Book")));
+
+        assertTrue(exception.getMessage().contains("task 2"));
+        assertTrue(exception.getMessage().contains("read book"));
+    }
+
+    @Test
+    public void add_duplicate_leavesTheListAndItsUndoHistoryUntouched() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("read book"));
+        tasks.add(new Todo("write essay"));
+
+        assertThrows(SerangoonerException.class, () -> tasks.add(new Todo("read book")));
+
+        assertEquals(2, tasks.size());
+        // The refused add left nothing to undo, so undo reverses the add before it.
+        assertTrue(tasks.undo());
+        assertEquals(1, tasks.size());
+        assertEquals("[T][ ] read book", tasks.getTasks().get(0).toString());
+    }
+
+    @Test
+    public void add_sameDescriptionAsAnotherKindOfTask_addsIt() {
+        TaskList tasks = new TaskList(List.of(new Todo("submit ip")));
+        tasks.add(new Deadline("submit ip", "2026-09-01"));
+        assertEquals(2, tasks.size());
+    }
+
+    @Test
+    public void add_duplicateOfADeletedTask_addsIt() {
+        TaskList tasks = new TaskList(List.of(new Todo("read book")));
+        tasks.delete(1);
+        tasks.add(new Todo("read book"));
+        assertEquals(1, tasks.size());
+    }
+
+    @Test
+    public void constructor_duplicateTasks_keepsBoth() {
+        // Tasks loaded from an older save file are taken as they are.
+        TaskList tasks = new TaskList(List.of(new Todo("read book"), new Todo("read book")));
+        assertEquals(2, tasks.size());
     }
 }

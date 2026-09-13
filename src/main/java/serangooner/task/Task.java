@@ -2,6 +2,7 @@ package serangooner.task;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -77,6 +78,35 @@ public abstract class Task {
      */
     public boolean isWithin(LocalDate start, LocalDate end) {
         return false;
+    }
+
+    /**
+     * Returns whether the given task is this same task entered again.
+     * Two tasks are the same when they are of the same kind and describe the
+     * same thing, whatever case or spacing each was typed in. Whether either
+     * is done does not matter, since finishing a task does not make it a
+     * different one. A kind of task that carries dates compares those too.
+     * This is deliberately not {@link #equals(Object)}: the list tells its
+     * tasks apart by identity, so that undoing an add removes the very task
+     * that was added.
+     *
+     * @param other Task to compare against.
+     * @return True if the other task duplicates this one.
+     */
+    public boolean isDuplicateOf(Task other) {
+        return getClass() == other.getClass()
+                && normalizeDescription(description).equals(normalizeDescription(other.description));
+    }
+
+    /**
+     * Returns the given description reduced to what makes it distinct: its
+     * words, in lower case, one space apart.
+     *
+     * @param description Description as the user typed it.
+     * @return Description with case and spacing evened out.
+     */
+    private static String normalizeDescription(String description) {
+        return description.strip().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
     }
 
     /**

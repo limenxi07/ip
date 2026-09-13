@@ -50,6 +50,17 @@ public class Deadline extends Task {
         return isOverlapping(deadline, deadline, start, end);
     }
 
+    /**
+     * {@inheritDoc}
+     * A deadline must also fall due at the same time.
+     */
+    @Override
+    public boolean isDuplicateOf(Task other) {
+        return other instanceof Deadline otherDeadline
+                && super.isDuplicateOf(other)
+                && deadline.equals(otherDeadline.deadline);
+    }
+
     @Override
     public String toSaveFormat() {
         return SAVE_CODE + SAVE_DELIMITER + super.toSaveFormat()
