@@ -19,6 +19,12 @@ public abstract class Task {
     public static final String SAVE_DONE = "1";
     /** Field value marking a saved task as not yet completed. */
     public static final String SAVE_NOT_DONE = "0";
+    /** Position of the type code within the fields of a saved task. */
+    public static final int SAVE_INDEX_TYPE = 0;
+    /** Position of the completion flag within the fields of a saved task. */
+    public static final int SAVE_INDEX_DONE = 1;
+    /** Position of the description within the fields of a saved task. */
+    public static final int SAVE_INDEX_DESCRIPTION = 2;
 
     private final String description;
     private boolean isDone;
@@ -113,8 +119,8 @@ public abstract class Task {
                 return Optional.empty();
             }
         }
-        boolean isDone = SAVE_DONE.equals(fields[1]);
-        if (!isDone && !SAVE_NOT_DONE.equals(fields[1])) {
+        boolean isDone = SAVE_DONE.equals(fields[SAVE_INDEX_DONE]);
+        if (!isDone && !SAVE_NOT_DONE.equals(fields[SAVE_INDEX_DONE])) {
             return Optional.empty();
         }
 
@@ -140,6 +146,11 @@ public abstract class Task {
         return (isDone ? SAVE_DONE : SAVE_NOT_DONE) + SAVE_DELIMITER + description;
     }
 
+    /**
+     * Returns this task written the way it is shown to the user.
+     * Subclasses prepend their type tag and append their own dates, the same
+     * way they build on {@link #toSaveFormat()}.
+     */
     @Override
     public String toString() {
         return (isDone ? "[✓] " : "[ ] ") + description;
