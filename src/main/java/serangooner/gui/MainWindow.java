@@ -44,10 +44,13 @@ public class MainWindow extends AnchorPane {
 
     /**
      * Keeps the newest message in view as the conversation grows.
+     * The scroll position is moved rather than bound, so that the user can
+     * still scroll back up to read earlier messages.
      */
     @FXML
     public void initialize() {
-        scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
+        dialogContainer.heightProperty().addListener((observable, oldHeight, newHeight) ->
+                scrollPane.setVvalue(1.0));
     }
 
     public void setChatbot(Serangooner chatbot) {
