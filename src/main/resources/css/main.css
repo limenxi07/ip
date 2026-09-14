@@ -5,10 +5,14 @@
     -fx-background-color: main-color;
 }
 
+/* The input box and button have round ends, to match the speech bubbles. */
 .text-field {
     -fx-background-color: white;
+    -fx-background-radius: 2em;
     -fx-border-color: trim-color;
-    -fx-border-width: 0 0 2px 0;
+    -fx-border-width: 2px;
+    -fx-border-radius: 2em;
+    -fx-padding: 0 14px 0 14px;
     -fx-font-family: "Trebuchet MS", "DejaVu Sans", sans-serif;
     -fx-font-size: 15px;
     -fx-prompt-text-fill: rgb(160, 176, 182);
@@ -20,7 +24,7 @@
     -fx-font-family: "Trebuchet MS", "DejaVu Sans", sans-serif;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
-    -fx-background-radius: 0;
+    -fx-background-radius: 2em;
 }
 
 .button:hover {
