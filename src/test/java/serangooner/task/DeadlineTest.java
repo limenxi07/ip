@@ -141,4 +141,10 @@ public class DeadlineTest {
         assertFalse(deadline.isDuplicateOf(todo));
         assertFalse(todo.isDuplicateOf(deadline));
     }
+
+    @Test
+    public void isDuplicateOf_differentDescriptionSameDate_returnsFalse() {
+        assertFalse(new Deadline("submit ip", "2026-09-01")
+                .isDuplicateOf(new Deadline("submit tp", "2026-09-01")));
+    }
 }

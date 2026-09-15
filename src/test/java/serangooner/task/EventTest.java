@@ -159,4 +159,10 @@ public class EventTest {
         assertFalse(new Event("orbital", "2026-09-03", "2026-09-03")
                 .isDuplicateOf(new Deadline("orbital", "2026-09-03")));
     }
+
+    @Test
+    public void isDuplicateOf_differentDescriptionSameTimes_returnsFalse() {
+        assertFalse(new Event("orbital demo", "2026-09-05 1400", "2026-09-05 1600")
+                .isDuplicateOf(new Event("hackathon", "2026-09-05 1400", "2026-09-05 1600")));
+    }
 }
