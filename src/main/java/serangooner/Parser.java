@@ -108,6 +108,8 @@ public class Parser {
 
     /**
      * Returns the deadline described by the given command.
+     * The command is split at the last " by ", since a date never carries
+     * that word but a description such as "stand by me" may.
      *
      * @param rawCommand Command in the form "deadline &lt;description&gt; by &lt;date&gt;".
      * @return Deadline the command describes, its description trimmed.
@@ -119,7 +121,7 @@ public class Parser {
         // Parsing logic authored with Codex.
         String command = rawCommand.trim();
         int descriptionStart = getArgumentStart(CommandType.DEADLINE);
-        int byIndex = command.indexOf(SEPARATOR_BY);
+        int byIndex = command.lastIndexOf(SEPARATOR_BY);
         if (byIndex < descriptionStart) {
             throw createInvalidFormatException(CommandType.DEADLINE);
         }
@@ -132,6 +134,8 @@ public class Parser {
 
     /**
      * Returns the event described by the given command.
+     * The command is split at the last " to ", and at the last " from " before
+     * it, since dates never carry those words but a description may.
      *
      * @param rawCommand Command in the form "event &lt;description&gt; from &lt;date&gt; to &lt;date&gt;".
      * @return Event the command describes, its description trimmed.
@@ -144,8 +148,8 @@ public class Parser {
         // Parsing logic authored with Codex.
         String command = rawCommand.trim();
         int descriptionStart = getArgumentStart(CommandType.EVENT);
-        int fromIndex = command.indexOf(SEPARATOR_FROM);
-        int toIndex = command.indexOf(SEPARATOR_TO, fromIndex);
+        int toIndex = command.lastIndexOf(SEPARATOR_TO);
+        int fromIndex = command.lastIndexOf(SEPARATOR_FROM, toIndex);
         int fromStart = fromIndex + SEPARATOR_FROM.length();
 
         boolean isFromAfterKeyword = fromIndex >= descriptionStart;

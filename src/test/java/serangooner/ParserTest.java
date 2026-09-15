@@ -242,11 +242,9 @@ public class ParserTest {
     }
 
     @Test
-    public void parseDeadline_descriptionContainingTheSeparator_splitsAtTheFirstOne() {
-        // "pay by phone by <date>" splits at the first " by ", leaving the rest
-        // as the date, which then fails to parse. Pinned as known behaviour.
-        assertThrows(SerangoonerException.class, () ->
-                Parser.parseDeadline("deadline pay by phone by 2026-09-01"));
+    public void parseDeadline_descriptionContainingTheSeparator_splitsAtTheLastOne() {
+        assertEquals("[D][ ] pay by phone (by: 01 Sep 2026)",
+                Parser.parseDeadline("deadline pay by phone by 2026-09-01").toString());
     }
 
     @Test
@@ -295,6 +293,13 @@ public class ParserTest {
     public void parseEvent_sameStartAndEndTime_exceptionThrown() {
         assertThrows(SerangoonerException.class, () ->
                 Parser.parseEvent("event demo from 2026-09-03 1400 to 2026-09-03 1400"));
+    }
+
+    @Test
+    public void parseEvent_descriptionCarryingBothSeparators_splitsAtTheLastOnes() {
+        assertEquals("[E][ ] talk from the heart to all (from: 03 Sep 2026 to: 04 Sep 2026)",
+                Parser.parseEvent("event talk from the heart to all from 2026-09-03 to 2026-09-04")
+                        .toString());
     }
 
     @Test
