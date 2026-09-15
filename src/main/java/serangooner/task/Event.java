@@ -25,7 +25,8 @@ public class Event extends Task {
      * @param startDateTime Date, and optionally time, at which the event starts.
      * @param endDateTime Date, and optionally time, at which the event ends.
      * @throws SerangoonerException If either date is not in an accepted format,
-     *         or the event ends before it starts.
+     *         the event ends before it starts, or it ends the moment it starts.
+     *         Two equal bare dates are allowed, as an event taking up that whole day.
      */
     public Event(String description, String startDateTime, String endDateTime) {
         super(description);
@@ -33,6 +34,11 @@ public class Event extends Task {
         this.endDateTime = TaskDateTime.parse(endDateTime);
         if (this.endDateTime.isBefore(this.startDateTime)) {
             throw new SerangoonerException("INVALID. ur event ends before it starts o.O");
+        }
+
+        boolean isTimeGiven = this.startDateTime.hasTime() || this.endDateTime.hasTime();
+        if (isTimeGiven && this.endDateTime.isSameMomentAs(this.startDateTime)) {
+            throw new SerangoonerException("INVALID. ur event ends the moment it starts o.O");
         }
     }
 

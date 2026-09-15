@@ -268,9 +268,15 @@ public class ParserTest {
     }
 
     @Test
-    public void parseEvent_sameStartAndEnd_returnsEvent() {
+    public void parseEvent_sameStartAndEndDate_returnsEvent() {
         assertEquals("[E][ ] demo (from: 03 Sep 2026 to: 03 Sep 2026)",
                 Parser.parseEvent("event demo from 2026-09-03 to 2026-09-03").toString());
+    }
+
+    @Test
+    public void parseEvent_sameStartAndEndTime_exceptionThrown() {
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseEvent("event demo from 2026-09-03 1400 to 2026-09-03 1400"));
     }
 
     @Test

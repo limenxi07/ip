@@ -140,7 +140,7 @@ public class Parser {
      * @return Event the command describes.
      * @throws SerangoonerException If the command does not follow that form, if
      *         either of its dates is not in an accepted format, or if the event
-     *         ends before it starts.
+     *         does not end after it starts.
      */
     public static Event parseEvent(String rawCommand) {
         // Parsing logic authored with Codex.

@@ -74,6 +74,19 @@ public class TaskDateTimeTest {
     }
 
     @Test
+    public void isSameMomentAs_bareDateAndThatDateAtMidnight_returnsTrue() {
+        // The same moment, although not equal values, since only one of them shows a time.
+        TaskDateTime bareDate = TaskDateTime.parse("2026-09-01");
+        assertTrue(bareDate.isSameMomentAs(TaskDateTime.parse("2026-09-01 0000")));
+    }
+
+    @Test
+    public void isSameMomentAs_bareDateAndLaterThatDay_returnsFalse() {
+        TaskDateTime bareDate = TaskDateTime.parse("2026-09-01");
+        assertFalse(bareDate.isSameMomentAs(TaskDateTime.parse("2026-09-01 0001")));
+    }
+
+    @Test
     public void parse_unrecognizedFormat_messageQuotesInputAndGivesTheHint() {
         SerangoonerException exception = assertThrows(SerangoonerException.class, () ->
                 TaskDateTime.parse("next tuesday"));

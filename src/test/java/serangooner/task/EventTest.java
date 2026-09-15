@@ -26,8 +26,20 @@ public class EventTest {
     }
 
     @Test
-    public void constructor_startAndEndAtTheSameMoment_isAllowed() {
-        Task event = new Event("demo", "2026-09-05 1400", "2026-09-05 1400");
+    public void constructor_startAndEndAtTheSameTime_exceptionThrown() {
+        assertThrows(SerangoonerException.class, () ->
+                new Event("demo", "2026-09-05 1400", "2026-09-05 1400"));
+    }
+
+    @Test
+    public void constructor_bareDateAndThatDateAtMidnight_exceptionThrown() {
+        assertThrows(SerangoonerException.class, () ->
+                new Event("demo", "2026-09-05", "2026-09-05 0000"));
+    }
+
+    @Test
+    public void constructor_sameBareDateAtBothEnds_coversThatWholeDay() {
+        Task event = new Event("demo", "2026-09-05", "2026-09-05");
         assertTrue(event.isWithin(LocalDate.of(2026, 9, 5), LocalDate.of(2026, 9, 5)));
     }
 

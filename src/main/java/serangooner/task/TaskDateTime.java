@@ -109,6 +109,24 @@ public class TaskDateTime {
     }
 
     /**
+     * Returns whether this point in time falls at the same moment as the given
+     * one, whether or not each was given a time of day.
+     *
+     * @param other Point in time to compare against.
+     * @return True if neither value comes before the other.
+     */
+    public boolean isSameMomentAs(TaskDateTime other) {
+        return dateTime.isEqual(other.dateTime);
+    }
+
+    /**
+     * Returns whether a time of day was given, rather than a bare date.
+     */
+    public boolean hasTime() {
+        return hasTime;
+    }
+
+    /**
      * Returns the calendar date this point in time falls on.
      */
     public LocalDate toLocalDate() {
