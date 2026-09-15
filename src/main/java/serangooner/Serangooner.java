@@ -68,7 +68,9 @@ public class Serangooner {
     /**
      * Runs the command the given line asks for, and returns what to say back.
      * A line the chatbot cannot make sense of is answered rather than thrown,
-     * so that one bad command never ends the conversation.
+     * so that one bad command never ends the conversation. The same goes for
+     * a failure no one foresaw, which is owned up to as the chatbot's fault
+     * rather than the user's.
      *
      * @param fullCommand Line as the user typed it.
      * @return What the chatbot says in reply.
@@ -79,6 +81,8 @@ public class Serangooner {
             return new Response(command.execute(tasks, ui, storage), command.isExit(), false);
         } catch (SerangoonerException exception) {
             return new Response(exception.getMessage(), false, true);
+        } catch (RuntimeException exception) {
+            return new Response(ui.formatUnexpectedError(exception), false, true);
         }
     }
 

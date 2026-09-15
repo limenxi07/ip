@@ -171,6 +171,20 @@ public class SerangoonerTest {
     }
 
     @Test
+    public void getResponse_unforeseenFailure_reportsAnErrorWithoutEndingTheConversation(
+            @TempDir Path directory) {
+        Serangooner serangooner = new Serangooner(directory.resolve("tasks.txt").toString());
+
+        // Neither front end passes a missing line, so the failure it causes is one no check foresaw.
+        Serangooner.Response response = serangooner.getResponse(null);
+
+        assertTrue(response.isError());
+        assertFalse(response.isExit());
+        assertTrue(response.text().contains("NullPointerException"));
+        assertTrue(serangooner.getResponse("todo read book").text().startsWith("added todo"));
+    }
+
+    @Test
     public void getResponse_unknownCommand_reportsAnErrorWithoutEndingTheConversation(
             @TempDir Path directory) {
         Serangooner serangooner = new Serangooner(directory.resolve("tasks.txt").toString());

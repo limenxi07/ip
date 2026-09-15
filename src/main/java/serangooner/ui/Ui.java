@@ -146,6 +146,18 @@ public class Ui {
     }
 
     /**
+     * Returns word that a command failed in a way the chatbot did not foresee.
+     * The kind of failure is named, so that it can be reported, but nothing
+     * more of its detail is shown to the user.
+     *
+     * @param exception Failure that was caught.
+     */
+    public String formatUnexpectedError(RuntimeException exception) {
+        return "oops, something broke on my side (" + exception.getClass().getSimpleName()
+                + ") :( pls try again";
+    }
+
+    /**
      * Returns the farewell that closes a conversation.
      */
     public String formatFarewell() {
