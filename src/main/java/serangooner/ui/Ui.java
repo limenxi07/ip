@@ -33,22 +33,18 @@ public class Ui {
     /**
      * Returns what to say about the save file that was just read, and an empty
      * string when there was neither a task nor a problem worth mentioning.
+     * Word of a backup, when one was made or attempted, follows on its own line.
      *
      * @param report Outcome of reading the save file.
      */
     public String formatLoadReport(Storage.LoadResult report) {
-        if (!report.errorMessage().isEmpty()) {
-            return report.errorMessage();
+        String summary = report.errorMessage().isEmpty()
+                ? summarizeLoadedTasks(report)
+                : report.errorMessage();
+        if (report.backupMessage().isEmpty()) {
+            return summary;
         }
-        if (report.tasks().isEmpty() && report.skippedLineCount() == 0) {
-            return "";
-        }
-
-        String summary = "loaded " + report.tasks().size() + " task(s) from your last visit";
-        if (report.skippedLineCount() > 0) {
-            summary += "; skipped " + report.skippedLineCount() + " unreadable line(s)";
-        }
-        return summary;
+        return joinLines(summary, report.backupMessage());
     }
 
     /**
@@ -154,6 +150,24 @@ public class Ui {
      */
     public String formatFarewell() {
         return "bye~";
+    }
+
+    /**
+     * Returns how many tasks were read from the save file and how many lines
+     * were skipped, or an empty string when there were neither.
+     *
+     * @param report Outcome of a save file that was read.
+     */
+    private static String summarizeLoadedTasks(Storage.LoadResult report) {
+        if (report.tasks().isEmpty() && report.skippedLineCount() == 0) {
+            return "";
+        }
+
+        String summary = "loaded " + report.tasks().size() + " task(s) from your last visit";
+        if (report.skippedLineCount() > 0) {
+            summary += "; skipped " + report.skippedLineCount() + " unreadable line(s)";
+        }
+        return summary;
     }
 
     /**

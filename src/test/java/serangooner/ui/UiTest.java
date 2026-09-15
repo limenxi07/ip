@@ -60,25 +60,35 @@ public class UiTest {
 
     @Test
     public void formatLoadReport_nothingLoaded_saysNothing() {
-        assertEquals("", ui.formatLoadReport(new Storage.LoadResult(List.of(), 0, "")));
+        assertEquals("", ui.formatLoadReport(new Storage.LoadResult(List.of(), 0, "", "")));
     }
 
     @Test
     public void formatLoadReport_tasksLoaded_reportsCount() {
         assertEquals("loaded 3 task(s) from your last visit",
-                ui.formatLoadReport(new Storage.LoadResult(threeTasks(), 0, "")));
+                ui.formatLoadReport(new Storage.LoadResult(threeTasks(), 0, "", "")));
     }
 
     @Test
     public void formatLoadReport_linesSkipped_reportsBothCounts() {
         assertEquals("loaded 3 task(s) from your last visit; skipped 2 unreadable line(s)",
-                ui.formatLoadReport(new Storage.LoadResult(threeTasks(), 2, "")));
+                ui.formatLoadReport(new Storage.LoadResult(threeTasks(), 2, "", "")));
     }
 
     @Test
     public void formatLoadReport_loadFailed_reportsReason() {
         assertEquals("couldn't read it",
-                ui.formatLoadReport(new Storage.LoadResult(List.of(), 0, "couldn't read it")));
+                ui.formatLoadReport(new Storage.LoadResult(List.of(), 0, "couldn't read it", "")));
+    }
+
+    @Test
+    public void formatLoadReport_backupMade_addsItOnItsOwnLine() {
+        assertEquals(List.of("loaded 3 task(s) from your last visit; skipped 1 unreadable line(s)",
+                        "kept a copy"),
+                lines(ui.formatLoadReport(new Storage.LoadResult(threeTasks(), 1, "", "kept a copy"))));
+        assertEquals(List.of("couldn't read it", "kept a copy"),
+                lines(ui.formatLoadReport(
+                        new Storage.LoadResult(List.of(), 0, "couldn't read it", "kept a copy"))));
     }
 
     @Test

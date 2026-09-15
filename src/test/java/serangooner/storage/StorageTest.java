@@ -1,5 +1,6 @@
 package serangooner.storage;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -175,6 +176,66 @@ public class StorageTest {
 
         assertEquals(1, result.tasks().size());
         assertEquals(2, result.skippedLineCount());
+    }
+
+    @Test
+    public void load_everyLineReadable_makesNoBackup(@TempDir Path directory) throws IOException {
+        Path file = directory.resolve("serangooner.txt");
+        Files.write(file, List.of("T | 0 | read book"));
+
+        Storage.LoadResult result = new Storage(file).load();
+
+        assertEquals("", result.backupMessage());
+        assertFalse(Files.exists(directory.resolve("serangooner.txt.bak")));
+    }
+
+    @Test
+    public void load_unreadableLines_backsUpTheOriginalBeforeItIsSavedOver(@TempDir Path directory)
+            throws IOException {
+        Path file = directory.resolve("serangooner.txt");
+        List<String> original = List.of("T | 0 | read book", "T | 7 | bad done flag");
+        Files.write(file, original);
+        Storage storage = new Storage(file);
+
+        Storage.LoadResult result = storage.load();
+        storage.save(result.tasks());
+
+        Path backup = directory.resolve("serangooner.txt.bak");
+        assertEquals(original, Files.readAllLines(backup));
+        assertTrue(result.backupMessage().contains(backup.toString()));
+        assertEquals(List.of("T | 0 | read book"), Files.readAllLines(file));
+    }
+
+    @Test
+    public void load_fileNotValidText_backsItUpByteForByte(@TempDir Path directory)
+            throws IOException {
+        // Bytes that are not valid UTF-8 make the whole file unreadable as lines.
+        Path file = directory.resolve("serangooner.txt");
+        byte[] original = {(byte) 0xC3, (byte) 0x28, '\n'};
+        Files.write(file, original);
+
+        Storage.LoadResult result = new Storage(file).load();
+
+        assertTrue(result.errorMessage().contains("couldn't read"));
+        assertArrayEquals(original, Files.readAllBytes(directory.resolve("serangooner.txt.bak")));
+    }
+
+    @Test
+    public void save_afterBackupFailed_exceptionThrownAndFileLeftUntouched(@TempDir Path directory)
+            throws IOException {
+        Path file = directory.resolve("serangooner.txt");
+        List<String> original = List.of("T | 7 | bad done flag");
+        Files.write(file, original);
+        // A non-empty directory where the backup should go cannot be replaced by a copy.
+        Path backup = Files.createDirectory(directory.resolve("serangooner.txt.bak"));
+        Files.write(backup.resolve("blocker.txt"), List.of("in the way"));
+        Storage storage = new Storage(file);
+
+        Storage.LoadResult result = storage.load();
+
+        assertTrue(result.backupMessage().contains("couldn't back it up"));
+        assertThrows(SerangoonerException.class, () -> storage.save(List.of(new Todo("read book"))));
+        assertEquals(original, Files.readAllLines(file));
     }
 
     @Test
