@@ -109,4 +109,13 @@ public class ConsoleTest {
         consoleReading("").showBlock("");
         assertEquals("", printed());
     }
+
+    @Test
+    public void readCommand_windowsLineEndings_returnsLinesWithoutCarriageReturns() {
+        Console console = consoleReading("list\r\nbye\r\n");
+
+        assertEquals("list", console.readCommand());
+        assertEquals("bye", console.readCommand());
+        assertFalse(console.hasNextCommand());
+    }
 }

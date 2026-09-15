@@ -273,4 +273,18 @@ public class StorageTest {
         assertEquals("[T][ ] 买菜", loaded.get(0).toString());
         assertEquals("[D][ ] 交报告 (by: 01 Sep 2026)", loaded.get(1).toString());
     }
+
+    @Test
+    public void load_windowsLineEndings_readsEveryTaskWithoutStrayCharacters(@TempDir Path directory)
+            throws IOException {
+        // A save file copied from Windows ends each line with a carriage return as well.
+        Path file = directory.resolve("serangooner.txt");
+        Files.writeString(file, "T | 0 | read book\r\nD | 1 | submit ip | 2026-09-01\r\n");
+
+        Storage.LoadResult result = new Storage(file).load();
+
+        assertEquals(0, result.skippedLineCount());
+        assertEquals("[T][ ] read book", result.tasks().get(0).toString());
+        assertEquals("[D][✓] submit ip (by: 01 Sep 2026)", result.tasks().get(1).toString());
+    }
 }
