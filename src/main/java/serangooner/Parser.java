@@ -21,7 +21,6 @@ import serangooner.task.Event;
 import serangooner.task.TaskDateTime;
 import serangooner.task.Todo;
 
-// Command parsing gathered into one class with the help of Claude Code.
 /**
  * Makes sense of the lines that the user types.
  * This class is the only one that knows how a command is written, so the

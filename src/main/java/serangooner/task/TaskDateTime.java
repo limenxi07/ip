@@ -9,7 +9,6 @@ import java.util.Objects;
 
 import serangooner.SerangoonerException;
 
-// Date handling authored with the help of Claude Code.
 /**
  * Represents a point in time attached to a task, as a date with an optional
  * time of day.
