@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
@@ -122,5 +123,17 @@ public class TaskTest {
     public void isDuplicateOf_sameDescriptionButAnotherKind_returnsFalse() {
         assertFalse(new PlainTask("read book").isDuplicateOf(new Todo("read book")));
         assertFalse(new Todo("read book").isDuplicateOf(new PlainTask("read book")));
+    }
+
+    @Test
+    public void isDuplicateOf_defaultLocaleTurkish_stillIgnoresCase() {
+        // Turkish lower-cases "I" to a dotless "ı", which would make "FILE" differ from "file".
+        Locale originalLocale = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            assertTrue(new PlainTask("FILE taxes").isDuplicateOf(new PlainTask("file taxes")));
+        } finally {
+            Locale.setDefault(originalLocale);
+        }
     }
 }

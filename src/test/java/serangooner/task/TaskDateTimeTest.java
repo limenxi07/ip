@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
@@ -182,5 +183,19 @@ public class TaskDateTimeTest {
     @Test
     public void equals_differentTimesOnTheSameDay_returnsFalse() {
         assertNotEquals(TaskDateTime.parse("2026-09-01 1800"), TaskDateTime.parse("2026-09-01 1900"));
+    }
+
+    @Test
+    public void parseAndToString_defaultLocaleChinese_stillReadAndWriteEnglish() {
+        // A machine set to Chinese must not change what the user types or sees.
+        Locale originalLocale = Locale.getDefault();
+        Locale.setDefault(Locale.SIMPLIFIED_CHINESE);
+        try {
+            TaskDateTime dateTime = TaskDateTime.parse("2026-09-01 1800");
+            assertEquals("01 Sep 2026, 6:00PM", dateTime.toString());
+            assertEquals("2026-09-01 1800", dateTime.toSaveFormat());
+        } finally {
+            Locale.setDefault(originalLocale);
+        }
     }
 }

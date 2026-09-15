@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
@@ -422,5 +423,18 @@ public class TaskListTest {
         // Tasks loaded from an older save file are taken as they are.
         TaskList tasks = new TaskList(List.of(new Todo("read book"), new Todo("read book")));
         assertEquals(2, tasks.size());
+    }
+
+    @Test
+    public void getEntriesMatching_defaultLocaleTurkish_stillIgnoresCase() {
+        // Turkish lower-cases "I" to a dotless "ı", which would stop "INVOICE" matching "invoice".
+        TaskList tasks = new TaskList(List.of(new Todo("pay INVOICE")));
+        Locale originalLocale = Locale.getDefault();
+        Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+        try {
+            assertEquals(1, tasks.getEntriesMatching("invoice").size());
+        } finally {
+            Locale.setDefault(originalLocale);
+        }
     }
 }
