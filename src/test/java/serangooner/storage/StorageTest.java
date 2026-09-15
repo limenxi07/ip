@@ -262,4 +262,15 @@ public class StorageTest {
         assertEquals("[T][ ] second", loaded.get(1).toString());
         assertEquals("[T][ ] third", loaded.get(2).toString());
     }
+
+    @Test
+    public void saveThenLoad_chineseDescription_readsItBackUnchanged(@TempDir Path directory) {
+        Storage storage = new Storage(directory.resolve("serangooner.txt"));
+        storage.save(List.of(new Todo("买菜"), new Deadline("交报告", "2026-09-01")));
+
+        List<Task> loaded = storage.load().tasks();
+
+        assertEquals("[T][ ] 买菜", loaded.get(0).toString());
+        assertEquals("[D][ ] 交报告 (by: 01 Sep 2026)", loaded.get(1).toString());
+    }
 }

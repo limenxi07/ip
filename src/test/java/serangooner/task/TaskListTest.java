@@ -437,4 +437,12 @@ public class TaskListTest {
             Locale.setDefault(originalLocale);
         }
     }
+
+    @Test
+    public void getEntriesMatching_chineseKeyword_findsTheTask() {
+        TaskList tasks = new TaskList(List.of(new Todo("买菜"), new Todo("交报告")));
+        List<TaskList.Entry> matches = tasks.getEntriesMatching("报告");
+        assertEquals(1, matches.size());
+        assertEquals(2, matches.get(0).number());
+    }
 }

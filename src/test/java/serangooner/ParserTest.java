@@ -445,4 +445,10 @@ public class ParserTest {
         assertTrue(response.contains("read book"));
         assertFalse(response.contains("write essay"));
     }
+
+    @Test
+    public void parseDeadline_chineseDescription_keepsItAsTyped() {
+        assertEquals("[D][ ] 交报告 (by: 01 Sep 2026)",
+                Parser.parseDeadline("deadline 交报告 by 2026-09-01").toString());
+    }
 }
