@@ -110,38 +110,35 @@ public class Parser {
      * Returns the deadline described by the given command.
      *
      * @param rawCommand Command in the form "deadline &lt;description&gt; by &lt;date&gt;".
-     * @return Deadline the command describes.
+     * @return Deadline the command describes, its description trimmed.
      * @throws SerangoonerException If the command does not follow that form, its
-     *         description carries the save delimiter, or its date is not in an
-     *         accepted format.
+     *         description is blank or carries the save delimiter, or its date is
+     *         not in an accepted format.
      */
     public static Deadline parseDeadline(String rawCommand) {
         // Parsing logic authored with Codex.
         String command = rawCommand.trim();
         int descriptionStart = getArgumentStart(CommandType.DEADLINE);
         int byIndex = command.indexOf(SEPARATOR_BY);
-        int deadlineStart = byIndex + SEPARATOR_BY.length();
-
-        boolean hasDescription = byIndex > descriptionStart;
-        boolean hasDeadline = isFollowedByText(command, deadlineStart);
-        if (!hasDescription || !hasDeadline) {
+        if (byIndex < descriptionStart) {
             throw createInvalidFormatException(CommandType.DEADLINE);
         }
-        assert descriptionStart < byIndex && deadlineStart < command.length()
-                : "the checks above leave both substring ranges well formed";
 
-        return new Deadline(command.substring(descriptionStart, byIndex),
-                command.substring(deadlineStart));
+        String description = command.substring(descriptionStart, byIndex);
+        String deadline = command.substring(byIndex + SEPARATOR_BY.length());
+        return new Deadline(requireText(description, CommandType.DEADLINE),
+                requireText(deadline, CommandType.DEADLINE));
     }
 
     /**
      * Returns the event described by the given command.
      *
      * @param rawCommand Command in the form "event &lt;description&gt; from &lt;date&gt; to &lt;date&gt;".
-     * @return Event the command describes.
+     * @return Event the command describes, its description trimmed.
      * @throws SerangoonerException If the command does not follow that form, its
-     *         description carries the save delimiter, either of its dates is not
-     *         in an accepted format, or the event does not end after it starts.
+     *         description is blank or carries the save delimiter, either of its
+     *         dates is not in an accepted format, or the event does not end after
+     *         it starts.
      */
     public static Event parseEvent(String rawCommand) {
         // Parsing logic authored with Codex.
@@ -150,19 +147,19 @@ public class Parser {
         int fromIndex = command.indexOf(SEPARATOR_FROM);
         int toIndex = command.indexOf(SEPARATOR_TO, fromIndex);
         int fromStart = fromIndex + SEPARATOR_FROM.length();
-        int toStart = toIndex + SEPARATOR_TO.length();
 
-        boolean hasDescription = fromIndex > descriptionStart;
-        boolean hasStart = toIndex > fromStart;
-        boolean hasEnd = isFollowedByText(command, toStart);
-        if (!hasDescription || !hasStart || !hasEnd) {
+        boolean isFromAfterKeyword = fromIndex >= descriptionStart;
+        // The two separators may share a space, as in "from to", leaving no room for a start.
+        boolean isToAfterFrom = toIndex >= fromStart;
+        if (!isFromAfterKeyword || !isToAfterFrom) {
             throw createInvalidFormatException(CommandType.EVENT);
         }
-        assert descriptionStart < fromIndex && fromStart < toIndex && toStart < command.length()
-                : "the checks above leave all three substring ranges well formed";
 
-        return new Event(command.substring(descriptionStart, fromIndex),
-                command.substring(fromStart, toIndex), command.substring(toStart));
+        String description = command.substring(descriptionStart, fromIndex);
+        String start = command.substring(fromStart, toIndex);
+        String end = command.substring(toIndex + SEPARATOR_TO.length());
+        return new Event(requireText(description, CommandType.EVENT),
+                requireText(start, CommandType.EVENT), requireText(end, CommandType.EVENT));
     }
 
     /**
@@ -248,6 +245,21 @@ public class Parser {
     }
 
     /**
+     * Returns one part of a command with the space around it removed.
+     *
+     * @param part Text found between separators of the command.
+     * @param commandType Command that the input was recognized as.
+     * @return Part without surrounding space.
+     * @throws SerangoonerException If the part is blank.
+     */
+    private static String requireText(String part, CommandType commandType) {
+        if (part.isBlank()) {
+            throw createInvalidFormatException(commandType);
+        }
+        return part.trim();
+    }
+
+    /**
      * Returns the position at which the argument of the given command starts,
      * which is just past its keyword and the space that follows it.
      *
@@ -256,19 +268,6 @@ public class Parser {
      */
     private static int getArgumentStart(CommandType commandType) {
         return commandType.getKeyword().length() + 1;
-    }
-
-    /**
-     * Returns whether the given command carries anything other than space
-     * from the given position onwards.
-     *
-     * @param command Line of input entered by the user, trimmed.
-     * @param start Position just past a separator, which may be past the end
-     *         of the line when that separator was never found.
-     * @return True if a value follows the separator.
-     */
-    private static boolean isFollowedByText(String command, int start) {
-        return start < command.length() && !command.substring(start).isBlank();
     }
 
     private static SerangoonerException createInvalidCommandException() {

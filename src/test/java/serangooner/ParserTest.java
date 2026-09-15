@@ -256,6 +256,18 @@ public class ParserTest {
     }
 
     @Test
+    public void parseDeadline_descriptionOfSpacesOnly_exceptionThrown() {
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseDeadline("deadline     by 2026-09-01"));
+    }
+
+    @Test
+    public void parseDeadline_extraSpacesAroundParts_trimsThem() {
+        assertEquals("[D][ ] submit ip (by: 01 Sep 2026)",
+                Parser.parseDeadline("deadline   submit ip   by   2026-09-01").toString());
+    }
+
+    @Test
     public void parseDeadline_descriptionCarryingTheSaveDelimiter_exceptionThrown() {
         assertThrows(SerangoonerException.class, () ->
                 Parser.parseDeadline("deadline submit ip | tp by 2026-09-01"));
@@ -283,6 +295,22 @@ public class ParserTest {
     public void parseEvent_sameStartAndEndTime_exceptionThrown() {
         assertThrows(SerangoonerException.class, () ->
                 Parser.parseEvent("event demo from 2026-09-03 1400 to 2026-09-03 1400"));
+    }
+
+    @Test
+    public void parseEvent_blankParts_exceptionThrown() {
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseEvent("event     from 2026-09-03 to 2026-09-04"));
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseEvent("event demo from    to 2026-09-04"));
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseEvent("event demo from to 2026-09-04"));
+    }
+
+    @Test
+    public void parseEvent_extraSpacesAroundParts_trimsThem() {
+        assertEquals("[E][ ] orbital (from: 03 Sep 2026 to: 04 Sep 2026)",
+                Parser.parseEvent("event  orbital  from  2026-09-03  to  2026-09-04").toString());
     }
 
     @Test
