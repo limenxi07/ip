@@ -24,7 +24,8 @@ public class Event extends Task {
      * @param description Text describing what the event involves.
      * @param startDateTime Date, and optionally time, at which the event starts.
      * @param endDateTime Date, and optionally time, at which the event ends.
-     * @throws SerangoonerException If either date is not in an accepted format,
+     * @throws SerangoonerException If the description carries the save delimiter,
+     *         either date is not in an accepted format,
      *         the event ends before it starts, or it ends the moment it starts.
      *         Two equal bare dates are allowed, as an event taking up that whole day.
      */

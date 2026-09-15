@@ -2,11 +2,14 @@ package serangooner.task;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
+
+import serangooner.SerangoonerException;
 
 public class TaskTest {
     /** Smallest possible task type, so the base class is tested on its own terms. */
@@ -24,6 +27,17 @@ public class TaskTest {
     @Test
     public void constructor_newTask_startsNotDone() {
         assertFalse(new PlainTask("read book").isDone());
+    }
+
+    @Test
+    public void constructor_descriptionCarryingTheSaveDelimiter_exceptionThrown() {
+        assertThrows(SerangoonerException.class, () -> new PlainTask("read book | write essay"));
+    }
+
+    @Test
+    public void constructor_barePipeWithoutSurroundingSpaces_isAllowed() {
+        // Only the delimiter as written, with its spaces, would split a saved line.
+        assertEquals("[ ] either|or", new PlainTask("either|or").toString());
     }
 
     @Test

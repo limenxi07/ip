@@ -21,7 +21,8 @@ public class Deadline extends Task {
      *
      * @param description Text describing what the task involves.
      * @param deadline Date, and optionally time, by which the task must be completed.
-     * @throws SerangoonerException If the date is not in an accepted format.
+     * @throws SerangoonerException If the description carries the save delimiter,
+     *         or the date is not in an accepted format.
      */
     public Deadline(String description, String deadline) {
         super(description);

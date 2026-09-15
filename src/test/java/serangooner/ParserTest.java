@@ -256,6 +256,12 @@ public class ParserTest {
     }
 
     @Test
+    public void parseDeadline_descriptionCarryingTheSaveDelimiter_exceptionThrown() {
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseDeadline("deadline submit ip | tp by 2026-09-01"));
+    }
+
+    @Test
     public void parseDeadline_dateThatDoesNotExist_exceptionThrown() {
         assertThrows(SerangoonerException.class, () ->
                 Parser.parseDeadline("deadline submit ip by 2026-02-30"));

@@ -14,6 +14,7 @@ public class Todo extends Task {
      * Constructs a todo with the given description.
      *
      * @param description Text describing what the task involves.
+     * @throws serangooner.SerangoonerException If the description carries the save delimiter.
      */
     public Todo(String description) {
         super(description);

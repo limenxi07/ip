@@ -33,10 +33,18 @@ public abstract class Task {
 
     /**
      * Constructs an incomplete task with the given description.
+     * A description carrying the save delimiter is refused, since it would
+     * split the saved line into the wrong fields and lose the task on the
+     * next load.
      *
      * @param description Text describing what the task involves.
+     * @throws SerangoonerException If the description carries the save delimiter.
      */
     protected Task(String description) {
+        if (description.contains(SAVE_DELIMITER)) {
+            throw new SerangoonerException("INVALID. pls leave '" + SAVE_DELIMITER
+                    + "' out of ur task name, i need it to save ur list");
+        }
         this.description = description;
         this.isDone = false;
     }

@@ -166,21 +166,6 @@ public class StorageTest {
     }
 
     @Test
-    public void saveThenLoad_descriptionCarryingTheFieldSeparator_losesThatTask(
-            @TempDir Path directory) {
-        // A description carrying " | " writes an extra field, so the line reads
-        // back as one of the wrong length and is skipped. Pinned as known
-        // behaviour: the task is silently lost on the next load.
-        Storage storage = new Storage(directory.resolve("serangooner.txt"));
-        storage.save(List.of(new Todo("read book | write essay")));
-
-        Storage.LoadResult result = storage.load();
-
-        assertEquals(List.of(), result.tasks());
-        assertEquals(1, result.skippedLineCount());
-    }
-
-    @Test
     public void load_emptyFile_returnsEmptyResult(@TempDir Path directory) throws IOException {
         Path file = directory.resolve("serangooner.txt");
         Files.write(file, List.of());

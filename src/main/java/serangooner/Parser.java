@@ -111,8 +111,9 @@ public class Parser {
      *
      * @param rawCommand Command in the form "deadline &lt;description&gt; by &lt;date&gt;".
      * @return Deadline the command describes.
-     * @throws SerangoonerException If the command does not follow that form, or
-     *         its date is not in an accepted format.
+     * @throws SerangoonerException If the command does not follow that form, its
+     *         description carries the save delimiter, or its date is not in an
+     *         accepted format.
      */
     public static Deadline parseDeadline(String rawCommand) {
         // Parsing logic authored with Codex.
@@ -138,9 +139,9 @@ public class Parser {
      *
      * @param rawCommand Command in the form "event &lt;description&gt; from &lt;date&gt; to &lt;date&gt;".
      * @return Event the command describes.
-     * @throws SerangoonerException If the command does not follow that form, if
-     *         either of its dates is not in an accepted format, or if the event
-     *         does not end after it starts.
+     * @throws SerangoonerException If the command does not follow that form, its
+     *         description carries the save delimiter, either of its dates is not
+     *         in an accepted format, or the event does not end after it starts.
      */
     public static Event parseEvent(String rawCommand) {
         // Parsing logic authored with Codex.
