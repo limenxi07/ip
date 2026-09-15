@@ -221,6 +221,14 @@ public class ParserTest {
     }
 
     @Test
+    public void parse_commandTakingNoArgumentGivenOne_exceptionThrown() {
+        assertThrows(SerangoonerException.class, () -> Parser.parse("list all"));
+        assertThrows(SerangoonerException.class, () -> Parser.parse("undo 3"));
+        assertThrows(SerangoonerException.class, () -> Parser.parse("help me"));
+        assertThrows(SerangoonerException.class, () -> Parser.parse("bye now"));
+    }
+
+    @Test
     public void parseCommandType_wordMerelyStartingWithAKeyword_exceptionThrown() {
         assertThrows(SerangoonerException.class, () -> Parser.parseCommandType("listing"));
         assertThrows(SerangoonerException.class, () -> Parser.parseCommandType("byebye"));

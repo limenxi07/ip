@@ -63,10 +63,10 @@ public class Parser {
             case DELETE -> new DeleteCommand(parseTaskNumber(fullCommand, commandType));
             case ON -> new OnCommand(parseDateRange(fullCommand));
             case FIND -> new FindCommand(parseKeyword(fullCommand));
-            case LIST -> new ListCommand();
-            case UNDO -> new UndoCommand();
-            case HELP -> new HelpCommand();
-            case BYE -> new ExitCommand();
+            case LIST -> requireNoArgument(fullCommand, commandType, new ListCommand());
+            case UNDO -> requireNoArgument(fullCommand, commandType, new UndoCommand());
+            case HELP -> requireNoArgument(fullCommand, commandType, new HelpCommand());
+            case BYE -> requireNoArgument(fullCommand, commandType, new ExitCommand());
         };
         assert command != null : "every command type must map to a command";
         return command;
@@ -246,6 +246,26 @@ public class Parser {
                 : "the argument is cut off past a keyword that was already matched";
         int keywordLength = commandType.getKeyword().length();
         return trimmed.length() > keywordLength ? trimmed.substring(keywordLength).trim() : "";
+    }
+
+    /**
+     * Returns the given command, once the input is known to carry nothing
+     * after the keyword.
+     * Extra words are refused rather than ignored, since "undo 3" or "bye now"
+     * suggests the user expects something the command does not do.
+     *
+     * @param input Line of input entered by the user.
+     * @param commandType Command that the input was recognized as.
+     * @param command Command to return, which takes no argument.
+     * @return The given command.
+     * @throws SerangoonerException If anything follows the keyword.
+     */
+    private static Command requireNoArgument(String input, CommandType commandType, Command command) {
+        if (!getArgument(input, commandType).isEmpty()) {
+            throw new SerangoonerException(commandType.name() + " FAILED. '" + commandType.getKeyword()
+                    + "' doesn't take anything after it");
+        }
+        return command;
     }
 
     /**
