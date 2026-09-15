@@ -227,4 +227,10 @@ public class UiTest {
         assertEquals("no task mentions 'book' :o",
                 ui.formatMatchingTasks(new TaskList().getEntriesMatching("book"), "book"));
     }
+
+    @Test
+    public void formatLoadReport_onlyUnreadableLines_reportsNothingLoadedAndTheSkippedCount() {
+        assertEquals("loaded 0 task(s) from your last visit; skipped 2 unreadable line(s)",
+                ui.formatLoadReport(new Storage.LoadResult(List.of(), 2, "", "")));
+    }
 }
