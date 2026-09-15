@@ -48,16 +48,29 @@ public class TaskDateTimeTest {
     }
 
     @Test
-    public void parse_dayPastEndOfMonth_clampsToTheLastDayOfThatMonth() {
-        // The input formatters resolve leniently, so an impossible day is pulled
-        // back into the month rather than rejected. Pinned as known behaviour.
-        assertEquals("28 Feb 2026", TaskDateTime.parse("2026-02-30").toString());
-        assertEquals("30 Apr 2026", TaskDateTime.parse("2026-04-31").toString());
+    public void parse_dayPastEndOfMonth_exceptionThrown() {
+        assertThrows(SerangoonerException.class, () -> TaskDateTime.parse("2026-02-30"));
+        assertThrows(SerangoonerException.class, () -> TaskDateTime.parse("2026-04-31"));
+        assertThrows(SerangoonerException.class, () -> TaskDateTime.parse("2026-02-29 1200"));
+    }
+
+    @Test
+    public void parse_leapDay_returnsIt() {
+        assertEquals("29 Feb 2028", TaskDateTime.parse("2028-02-29").toString());
     }
 
     @Test
     public void parse_outOfRangeTime_exceptionThrown() {
         assertThrows(SerangoonerException.class, () -> TaskDateTime.parse("2026-09-01 2500"));
+        assertThrows(SerangoonerException.class, () -> TaskDateTime.parse("2026-09-01 2400"));
+        assertThrows(SerangoonerException.class, () -> TaskDateTime.parse("2026-09-01 1260"));
+    }
+
+    @Test
+    public void parse_rightShapeButNoSuchDate_messageSaysTheDateDoesNotExist() {
+        SerangoonerException exception = assertThrows(SerangoonerException.class, () ->
+                TaskDateTime.parse("2026-02-30"));
+        assertTrue(exception.getMessage().contains("isn't on any calendar"));
     }
 
     @Test

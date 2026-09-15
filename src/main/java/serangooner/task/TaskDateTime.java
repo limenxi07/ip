@@ -4,8 +4,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import serangooner.SerangoonerException;
 
@@ -20,10 +22,15 @@ public class TaskDateTime {
     /** Wording of the accepted input formats, for use in error messages. */
     public static final String FORMAT_HINT = "dates must look like 2019-10-15 or 2019-10-15 1800";
 
+    // Strict resolving refuses 30 Feb or 2400 rather than quietly moving it to
+    // a real date, and needs the proleptic year "uuuu" in place of "yyyy".
     private static final DateTimeFormatter INPUT_DATE =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH);
+            DateTimeFormatter.ofPattern("uuuu-MM-dd", Locale.ENGLISH)
+                    .withResolverStyle(ResolverStyle.STRICT);
     private static final DateTimeFormatter INPUT_DATE_TIME =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm", Locale.ENGLISH);
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm", Locale.ENGLISH)
+                    .withResolverStyle(ResolverStyle.STRICT);
+    private static final Pattern INPUT_SHAPE = Pattern.compile("\\d{4}-\\d{2}-\\d{2}( \\d{4})?");
     private static final DateTimeFormatter OUTPUT_DATE =
             DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
     private static final DateTimeFormatter OUTPUT_DATE_TIME =
@@ -44,7 +51,8 @@ public class TaskDateTime {
      *
      * @param text Date on its own, or a date followed by a 24 hour time.
      * @return Point in time the text describes.
-     * @throws SerangoonerException If the text is in neither accepted format.
+     * @throws SerangoonerException If the text is in neither accepted format,
+     *         or is written in one but names a date or time that does not exist.
      */
     public static TaskDateTime parse(String text) {
         String trimmed = text.trim();
@@ -57,6 +65,10 @@ public class TaskDateTime {
         try {
             return new TaskDateTime(LocalDate.parse(trimmed, INPUT_DATE).atStartOfDay(), false);
         } catch (DateTimeParseException exception) {
+            if (INPUT_SHAPE.matcher(trimmed).matches()) {
+                throw new SerangoonerException("'" + trimmed + "' isn't on any calendar i know o.O "
+                        + "check the day, month and time", exception);
+            }
             throw new SerangoonerException("'" + trimmed + "' isn't a date i understand. "
                     + FORMAT_HINT, exception);
         }
@@ -68,7 +80,8 @@ public class TaskDateTime {
      *
      * @param text Date on its own, or a date followed by a 24 hour time.
      * @return Calendar date the text describes.
-     * @throws SerangoonerException If the text is in neither accepted format.
+     * @throws SerangoonerException If the text is in neither accepted format,
+     *         or is written in one but names a date or time that does not exist.
      */
     public static LocalDate parseDate(String text) {
         return parse(text).toLocalDate();

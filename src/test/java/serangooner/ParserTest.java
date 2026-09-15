@@ -256,6 +256,12 @@ public class ParserTest {
     }
 
     @Test
+    public void parseDeadline_dateThatDoesNotExist_exceptionThrown() {
+        assertThrows(SerangoonerException.class, () ->
+                Parser.parseDeadline("deadline submit ip by 2026-02-30"));
+    }
+
+    @Test
     public void parseEvent_endSeparatorBeforeStartSeparator_exceptionThrown() {
         assertThrows(SerangoonerException.class, () ->
                 Parser.parseEvent("event demo to 2026-09-04 from 2026-09-03"));
