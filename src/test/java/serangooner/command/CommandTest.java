@@ -104,6 +104,18 @@ public class CommandTest {
     }
 
     @Test
+    public void execute_undoCommandWithNothingToUndo_leavesTheSaveFileUntouched(@TempDir Path directory)
+            throws IOException {
+        Path file = directory.resolve("tasks.txt");
+        List<String> original = List.of("T | 0 | read book", "T | 7 | line a later fix may recover");
+        Files.write(file, original);
+
+        new UndoCommand().execute(new TaskList(), ui, new Storage(file));
+
+        assertEquals(original, Files.readAllLines(file));
+    }
+
+    @Test
     public void execute_listCommand_showsEveryTask(@TempDir Path directory) {
         TaskList tasks = new TaskList(List.of(new Todo("read book")));
 
