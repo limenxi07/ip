@@ -74,6 +74,8 @@ public class Parser {
 
     /**
      * Returns the command whose keyword matches the first word of the given input.
+     * Case is ignored, so a keyword typed with a capital or in full caps is
+     * still recognized.
      *
      * @param input Line of input entered by the user.
      * @return Command matching the first word of the input.
@@ -86,7 +88,7 @@ public class Parser {
         }
         String firstWord = input.trim().split("\\s+", 2)[0];
         return Arrays.stream(CommandType.values())
-                .filter(command -> command.getKeyword().equals(firstWord))
+                .filter(command -> command.getKeyword().equalsIgnoreCase(firstWord))
                 .findFirst()
                 .orElseThrow(Parser::createInvalidCommandException);
     }
@@ -242,9 +244,9 @@ public class Parser {
      */
     private static String getArgument(String command, CommandType commandType) {
         String trimmed = command.trim();
-        assert trimmed.startsWith(commandType.getKeyword())
-                : "the argument is cut off past a keyword that was already matched";
         int keywordLength = commandType.getKeyword().length();
+        assert trimmed.regionMatches(true, 0, commandType.getKeyword(), 0, keywordLength)
+                : "the argument is cut off past a keyword that was already matched";
         return trimmed.length() > keywordLength ? trimmed.substring(keywordLength).trim() : "";
     }
 

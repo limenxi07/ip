@@ -214,10 +214,16 @@ public class ParserTest {
 
 
     @Test
-    public void parseCommandType_keywordInAnyOtherCase_exceptionThrown() {
-        // Keywords are matched exactly, so the shouted form is not a command.
-        assertThrows(SerangoonerException.class, () -> Parser.parseCommandType("LIST"));
-        assertThrows(SerangoonerException.class, () -> Parser.parseCommandType("Todo read book"));
+    public void parseCommandType_keywordInAnyOtherCase_returnsThatCommand() {
+        assertEquals(CommandType.LIST, Parser.parseCommandType("LIST"));
+        assertEquals(CommandType.TODO, Parser.parseCommandType("Todo read book"));
+    }
+
+    @Test
+    public void parse_keywordInAnyOtherCase_carriesTheArgumentIntoTheCommand() {
+        assertEquals("[D][ ] submit ip (by: 01 Sep 2026)",
+                Parser.parseDeadline("DEADLINE submit ip by 2026-09-01").toString());
+        assertTrue(Parser.parse("Bye") instanceof ExitCommand);
     }
 
     @Test
