@@ -98,6 +98,10 @@ public class Storage {
     private static Optional<Task> parseTask(String line) {
         assert !line.isBlank() : "load() skips blank lines, so a line here can name a task type";
         String[] fields = line.split(Pattern.quote(Task.SAVE_DELIMITER));
+        // A line made only of delimiters splits into no fields at all.
+        if (fields.length == 0) {
+            return Optional.empty();
+        }
         return switch (fields[Task.SAVE_INDEX_TYPE]) {
             case Todo.SAVE_CODE -> Todo.parseSaveFields(fields);
             case Deadline.SAVE_CODE -> Deadline.parseSaveFields(fields);

@@ -166,6 +166,18 @@ public class StorageTest {
     }
 
     @Test
+    public void load_lineOfDelimitersOnly_skipsItInsteadOfThrowing(@TempDir Path directory)
+            throws IOException {
+        Path file = directory.resolve("serangooner.txt");
+        Files.write(file, List.of(" | ", "T | 0 | read book", " |  | "));
+
+        Storage.LoadResult result = new Storage(file).load();
+
+        assertEquals(1, result.tasks().size());
+        assertEquals(2, result.skippedLineCount());
+    }
+
+    @Test
     public void load_emptyFile_returnsEmptyResult(@TempDir Path directory) throws IOException {
         Path file = directory.resolve("serangooner.txt");
         Files.write(file, List.of());
