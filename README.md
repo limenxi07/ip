@@ -75,3 +75,9 @@ that people living in serangoon should be called serangooners.
 
 Claude Code (Opus 5 - High) was used to write code, and refactored the 
 codebase to follow the Java coding standard.
+
+## credits
+
+the gui (`Launcher`, `Main`, `MainWindow`, `DialogBox` and their fxml) is
+based on the [javafx tutorial](https://se-education.org/guides/tutorials/javaFx.html)
+from the cs2103t website.
